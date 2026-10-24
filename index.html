@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calendario de turnos mineros</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#c4571a">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--tx:#1d1d1b;--mut:#6b6a64;--bd:#ddd9cf;--w:#f2b33d;--wt:#4a3300;--n:#4b57b8;--nt:#fff;--r:#cfe8d5;--rt:#17432a;--ac:#c4571a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171715;--card:#222220;--tx:#f0eee7;--mut:#a09e94;--bd:#3a3935;--w:#b8841f;--wt:#fff6df;--n:#6a76d6;--r:#27493a;--rt:#d3f0dd;--ac:#ee8446;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171715;--card:#222220;--tx:#f0eee7;--mut:#a09e94;--bd:#3a3935;--w:#b8841f;--wt:#fff6df;--n:#6a76d6;--r:#27493a;--rt:#d3f0dd;--ac:#ee8446;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;padding:14px;max-width:560px;margin-inline:auto}
+h1{font-size:20px;margin:4px 0 2px}
+.sub{color:var(--mut);font-size:13px;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:12px}
+.lbl{font-size:12px;color:var(--mut);margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--bd);background:transparent;color:var(--tx);border-radius:999px;padding:10px 14px;font-size:14px;cursor:pointer}
+.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:10px}
+.row label{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:4px}
+input{font:inherit;font-size:15px;padding:7px 8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);width:92px}
+input[type=date]{width:150px}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.nav button{border:1px solid var(--bd);background:transparent;color:var(--tx);border-radius:8px;width:44px;height:40px;font-size:20px;cursor:pointer}
+.nav b{font-size:17px;text-transform:capitalize}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dh{text-align:center;font-size:11px;color:var(--mut);padding:2px 0}
+.d{aspect-ratio:1/1.05;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:14px;cursor:pointer;border:2px solid transparent;position:relative;line-height:1.1}
+.d small{font-size:9px;margin-top:2px;font-weight:600}
+.d.W{background:var(--w);color:var(--wt)}
+.d.N{background:var(--n);color:var(--nt)}
+.d.R{background:var(--r);color:var(--rt)}
+.d.e{visibility:hidden}
+.d.today{border-color:var(--tx)}
+.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:10px}
+.leg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stats b{display:block;font-size:22px}
+.stats span{font-size:12px;color:var(--mut)}
+.hint{font-size:12px;color:var(--mut);margin:8px 0 0}
+.t{border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:8px;font-size:14px}
+.t.cur{border-color:var(--ac);border-width:2px}
+.d.V{background:#d7a3d1;color:#3d1239}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .d.V{background:#7d4a78;color:#fbe6f8}}
+:root[data-theme="dark"] .d.V{background:#7d4a78;color:#fbe6f8}
+.vr{margin-top:12px;border-top:1px solid var(--bd);padding-top:10px;font-size:14px}
+.vr .l{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+.vr .l span{color:var(--mut)}
+.vr .l b{text-align:right}
+.vr small{display:block;color:var(--mut);font-size:12px;margin-top:6px}
+.hoy{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:10px}
+.hoy .big{font-size:20px;font-weight:700;margin:0 0 2px}
+.hoy p{margin:2px 0;font-size:14px;color:var(--mut)}
+.bar{height:8px;border-radius:99px;background:var(--bd);margin-top:8px;overflow:hidden}
+.bar div{height:100%;background:var(--ac)}
+.t b{display:block;margin-bottom:6px}
+.t .l{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
+.t .l span:last-child{color:var(--mut);white-space:nowrap}
+.t i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+button,input{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.nav .hy{width:auto;padding:0 14px;font-size:14px}
+summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;min-height:28px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"▾";color:var(--mut);transition:transform .2s}
+details[open]>summary::after{transform:rotate(180deg)}
+summary small{font-weight:400;color:var(--mut);font-size:12px;margin-left:auto;text-align:right}
+details[open]>summary small{display:none}
+details[open]>summary{margin-bottom:10px}
+footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;padding-top:12px;border-top:1px solid var(--bd)}
+</style>
+</head>
+<body>
+<h1>⛏️ Calendario de turnos mineros</h1>
+<p class="sub">Elige tu régimen, el tipo de turno y la fecha de subida.</p>
+
+<div class="card">
+  <p class="lbl">Resumen de hoy</p>
+  <div id="tl"></div>
+</div>
+
+<details class="card" id="dt"><summary><span>Turno y régimen</span><small id="sm1"></small></summary>
+  <p class="lbl">Régimen (días trabajo × días descanso)</p>
+  <div class="chips" id="presets"></div>
+  <div class="row">
+    <label>Días trabajo<input type="number" id="w" min="1" max="30"></label>
+    <label>Días descanso<input type="number" id="r" min="1" max="30"></label>
+  </div>
+  <p class="lbl" style="margin-top:12px">Tipo de turno</p>
+  <div class="chips" id="types"></div>
+  <div class="row">
+    <label>Primer día de trabajo (subida)<input type="date" id="s"></label>
+  </div>
+  <p class="hint">También puedes tocar un día del calendario para marcarlo como inicio de turno.</p>
+</details>
+
+<details class="card" id="dv"><summary><span>Vacaciones</span><small id="sm2"></small></summary>
+  <div class="chips" id="vt"></div>
+  <div id="vbox" style="display:none">
+    <div class="row">
+      <label>Inicio<input type="date" id="vs"></label>
+      <label>Cantidad de días<input type="number" id="vn" min="1" max="120"></label>
+    </div>
+    <p class="lbl" style="margin-top:12px">Tipo de días</p>
+    <div class="chips" id="vm"></div>
+    <p class="lbl" style="margin-top:12px">Al volver</p>
+    <div class="chips" id="vb"></div>
+    <div class="vr" id="vr"></div>
+  </div>
+</details>
+
+<div class="card">
+  <div class="nav"><button id="pv" aria-label="Mes anterior">‹</button><b id="mt"></b><button id="hy" class="hy">Hoy</button><button id="nx" aria-label="Mes siguiente">›</button></div>
+  <div class="grid" id="g"></div>
+  <div class="leg"><span><i style="background:var(--w)"></i>Turno día</span><span><i style="background:var(--n)"></i>Turno noche</span><span><i style="background:var(--r)"></i>Descanso</span><span><i style="background:#d7a3d1"></i>Vacaciones</span></div>
+</div>
+
+<footer>© 2026 Derechos reservados. By Dixon Cortés</footer>
+
+<script>
+var PRESETS=[[7,7],[4,3],[5,2],[8,6],[10,4],[14,14],[20,10],[4,4]];
+var MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+var DOW=["L","M","M","J","V","S","D"];
+var now=new Date();
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+var st={w:7,r:7,type:"D",start:iso(now),y:now.getFullYear(),m:now.getMonth(),vac:{on:false,s:"",n:15,mode:"H",reset:false}};
+try{var sv=JSON.parse(localStorage.getItem("turnos")||"null");if(sv){st.w=sv.w||7;st.r=sv.r||7;st.type=sv.type||"D";st.start=sv.start||st.start;if(sv.vac)st.vac=sv.vac}}catch(e){}
+var $=function(i){return document.getElementById(i)};
+function save(){try{localStorage.setItem("turnos",JSON.stringify({w:st.w,r:st.r,type:st.type,start:st.start,vac:st.vac}))}catch(e){}}
+function utc(s){var p=s.split("-");return Date.UTC(+p[0],+p[1]-1,+p[2])/864e5}
+function build(){
+  var h="";PRESETS.forEach(function(p){h+='<button class="chip'+(p[0]==st.w&&p[1]==st.r?' on':'')+'" data-w="'+p[0]+'" data-r="'+p[1]+'">'+p[0]+'×'+p[1]+'</button>'});
+  $("presets").innerHTML=h;
+  var T=[["D","Día"],["N","Noche"],["M","Día y noche"]];h="";
+  T.forEach(function(t){h+='<button class="chip'+(st.type==t[0]?' on':'')+'" data-t="'+t[0]+'">'+t[1]+'</button>'});
+  $("types").innerHTML=h;
+  $("w").value=st.w;$("r").value=st.r;$("s").value=st.start;
+}
+function render(){
+  var y=st.y,m=st.m;$("mt").textContent=MESES[m]+" "+y;
+  var h="";DOW.forEach(function(d){h+='<div class="dh">'+d+'</div>'});
+  var first=(new Date(y,m,1).getDay()+6)%7,n=new Date(y,m+1,0).getDate();
+  for(var i=0;i<first;i++)h+='<div class="d e"></div>';
+  VR=vrange();var cyc=st.w+st.r,s0=utc(st.start),W=0,R=0,td=iso(now);
+  for(var d=1;d<=n;d++){
+    var ds=y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+    var P=pos(utc(ds)),k=P.k,cls,tag="";
+    if(P.v){cls="V";tag="Vacac."}else if(k<st.w){
+      W++;
+      var night=st.type=="N"||(st.type=="M"&&k>=Math.ceil(st.w/2));
+      cls=night?"N":"W";tag=night?"Noche":"Día";
+      if(k==0)tag="Subida";else if(k==st.w-1)tag="Bajada";
+    }else{R++;cls="R";tag="Libre"}
+    h+='<div class="d '+cls+(ds==td?' today':'')+'" data-d="'+ds+'">'+d+'<small>'+tag+'</small></div>';
+  }
+  $("g").innerHTML=h;turnos(cyc,s0,y,m,n);
+}
+function fd(x){return new Date(x*864e5).toLocaleDateString("es-CL",{day:"numeric",month:"short",timeZone:"UTC"}).replace(".","")}
+function turnos(cyc,s0,y,m,n){
+  var a=Date.UTC(y,m,1)/864e5,b=a+n-1,tod=utc(iso(now));
+  var c=s0+Math.floor((a-s0)/cyc)*cyc,h="";
+  while(c<=b){
+    var we=c+st.w-1,re=c+cyc-1;
+    if(re>=a){
+      var cur=tod>=c&&tod<=re,ex="";
+      if(st.type=="M")ex=" · "+Math.ceil(st.w/2)+" día + "+Math.floor(st.w/2)+" noche";
+      h+='<div class="t'+(cur?' cur':'')+'"><b>Turno '+fd(c)+' – '+fd(re)+(cur?' (actual)':'')+'</b>'+
+        '<div class="l"><span><i style="background:var(--w)"></i>Trabajo: '+fd(c)+' – '+fd(we)+ex+'</span><span>'+st.w+' días</span></div>'+
+        '<div class="l"><span><i style="background:var(--r)"></i>Descanso: '+fd(we+1)+' – '+fd(re)+'</span><span>'+st.r+' días</span></div></div>';
+    }
+    c+=cyc;
+  }
+  var Pt=pos(tod),k=Pt.k,hy,pl=function(x){return x+(x==1?" día":" días")};
+  if(Pt.v){
+    var rr=Pt.r,dd=tod-rr[0]+1,tt=rr[1]-rr[0]+1,big,l1,pct,fl=rr[1]-tod,l2="Reintegro el "+fd(rr[1]+1);
+    if(st.vac.mode=="H"){
+      var el=0,nv=Math.max(1,Math.min(120,st.vac.n|0||15)),tw=new Date(tod*864e5).getUTCDay();
+      for(var q=rr[0];q<=tod;q++){var wq=new Date(q*864e5).getUTCDay();if(wq!=0&&wq!=6)el++}
+      big="Hoy: día "+el+" de "+nv+" de vacaciones (hábiles)"+((tw==0||tw==6)?" · fin de semana":"");
+      pct=Math.round(el/nv*100);
+      l1=el>=nv?"Hoy es tu último día hábil de vacaciones":"Faltan "+(nv-el)+((nv-el)==1?" día hábil":" días hábiles")+" para terminar ("+pl(fl)+" corridos)";
+    }else{
+      big="Hoy: día "+dd+" de "+tt+" de vacaciones";
+      pct=Math.round(dd/tt*100);
+      l1=fl==0?"Hoy es tu último día de vacaciones":"Faltan "+pl(fl)+" para terminar tus vacaciones";
+    }
+    hy='<div class="hoy"><p class="big">'+big+'</p>'+
+      '<p>'+l1+'</p><p>'+l2+'</p>'+
+      '<div class="bar"><div style="width:'+pct+'%"></div></div></div>';
+  }else if(k<st.w){
+    var f=st.w-k-1;
+    hy='<div class="hoy"><p class="big">Hoy: día '+(k+1)+' de '+st.w+' de turno</p>'+
+      '<p>'+(f==0?'Hoy es tu último día de turno (bajada hoy)':'Faltan '+pl(f)+' para terminar el turno (bajada el '+fd(tod+f)+')')+'</p>'+
+      '<div class="bar"><div style="width:'+Math.round((k+1)/st.w*100)+'%"></div></div></div>';
+  }else{
+    var j=k-st.w+1,g=cyc-k;
+    hy='<div class="hoy"><p class="big">Hoy: día '+j+' de '+st.r+' de descanso</p>'+
+      '<p>Faltan '+pl(g)+' para volver a subir (subida el '+fd(tod+g)+')</p>'+
+      '<div class="bar"><div style="width:'+Math.round(j/st.r*100)+'%"></div></div></div>';
+  }
+  $("tl").innerHTML=hy;
+}
+function mod(a,b){return((a%b)+b)%b}
+function vrange(){
+  var v=st.vac;if(!v.on||!v.s)return null;
+  var a=utc(v.s),n=Math.max(1,Math.min(120,v.n|0||15)),b;
+  if(v.mode=="C")b=a+n-1;
+  else{var c=0;b=a-1;while(c<n){b++;var wd=new Date(b*864e5).getUTCDay();if(wd!=0&&wd!=6)c++}}
+  return [a,b];
+}
+var VR=null;
+function pos(d){
+  var r=VR,cyc=st.w+st.r,base=utc(st.start);
+  if(r&&d>=r[0]&&d<=r[1])return{v:true,k:0,r:r};
+  if(r&&st.vac.reset&&d>r[1])base=r[1]+1;
+  return{k:mod(d-base,cyc)};
+}
+function vcalc(){
+  var r=vrange(),el=$("vr");
+  if(!r){el.innerHTML="";return}
+  var cyc=st.w+st.r,s0=utc(st.start),tr=0,de=0,hab=0;
+  for(var d=r[0];d<=r[1];d++){
+    if(mod(d-s0,cyc)<st.w)tr++;else de++;
+    var wk=new Date(d*864e5).getUTCDay();if(wk!=0&&wk!=6)hab++;
+  }
+  var tot=r[1]-r[0]+1,rt=r[1]+1,kk=mod(rt-s0,cyc),vuelta;
+  if(st.vac.reset)vuelta="Subida el "+fd(rt)+" (nuevo ciclo)";
+  else if(kk<st.w)vuelta="Día "+(kk+1)+" de "+st.w+" de turno";
+  else vuelta="En descanso (día "+(kk-st.w+1)+" de "+st.r+"), subes el "+fd(rt+cyc-kk);
+  var L=function(a,b){return '<div class="l"><span>'+a+'</span><b>'+b+'</b></div>'};
+  el.innerHTML=L("Vacaciones",fd(r[0])+" – "+fd(r[1]))+L("Días corridos",tot)+L("Días hábiles (lun–vie)",hab)+
+    L("Cubren de tu turno",tr+" de trabajo + "+de+" de descanso")+L("Reintegro",fd(rt))+L("Al volver",vuelta)+
+    '<small>No considera feriados ni reglas propias de tu empresa o contrato.</small>';
+}
+function vbuild(){
+  var v=st.vac;
+  function ch(a,cur){var h="";a.forEach(function(x){h+='<button class="chip'+(cur==x[0]?' on':'')+'" data-v="'+x[0]+'">'+x[1]+'</button>'});return h}
+  $("vt").innerHTML=ch([["0","Sin vacaciones"],["1","Programar vacaciones"]],v.on?"1":"0");
+  $("vm").innerHTML=ch([["C","Corridos"],["H","Hábiles (lun–vie)"]],v.mode);
+  $("vb").innerHTML=ch([["0","Sigue el ciclo"],["1","Reinicia con subida"]],v.reset?"1":"0");
+  $("vbox").style.display=v.on?"block":"none";
+  $("vs").value=v.s;$("vn").value=v.n;
+}
+$("vt").onclick=function(e){var b=e.target.closest("button");if(!b)return;st.vac.on=b.dataset.v=="1";if(st.vac.on&&!st.vac.s)st.vac.s=iso(now);all()};
+$("vm").onclick=function(e){var b=e.target.closest("button");if(!b)return;st.vac.mode=b.dataset.v;all()};
+$("vb").onclick=function(e){var b=e.target.closest("button");if(!b)return;st.vac.reset=b.dataset.v=="1";all()};
+$("vs").onchange=function(){st.vac.s=this.value;if(this.value){var p=this.value.split("-");st.y=+p[0];st.m=+p[1]-1}all()};
+$("vn").onchange=function(){st.vac.n=Math.max(1,Math.min(120,+this.value||1));all()};
+function sums(){
+  $("sm1").textContent=st.w+"×"+st.r+" · "+({D:"Día",N:"Noche",M:"Día y noche"}[st.type])+" · subida "+fd(utc(st.start));
+  var r=vrange();
+  $("sm2").textContent=r?fd(r[0])+" – "+fd(r[1]):"Sin vacaciones";
+}
+function all(){build();vbuild();render();vcalc();sums();save()}
+$("presets").onclick=function(e){var b=e.target.closest("button");if(!b)return;st.w=+b.dataset.w;st.r=+b.dataset.r;all()};
+$("types").onclick=function(e){var b=e.target.closest("button");if(!b)return;st.type=b.dataset.t;all()};
+$("w").onchange=function(){st.w=Math.max(1,Math.min(60,+this.value||1));all()};
+$("r").onchange=function(){st.r=Math.max(1,Math.min(60,+this.value||1));all()};
+$("s").onchange=function(){if(this.value){st.start=this.value;var p=this.value.split("-");st.y=+p[0];st.m=+p[1]-1}all()};
+$("g").onclick=function(e){var c=e.target.closest(".d[data-d]");if(!c)return;st.start=c.dataset.d;all()};
+$("pv").onclick=function(){st.m--;if(st.m<0){st.m=11;st.y--}render()};
+$("nx").onclick=function(){st.m++;if(st.m>11){st.m=0;st.y++}render()};
+$("hy").onclick=function(){st.y=now.getFullYear();st.m=now.getMonth();render()};
+if(!sv){$("dt").open=true}
+all();
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+</script>
+</body>
+</html>
