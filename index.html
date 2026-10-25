@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Calendario de turnos mineros</title>
+<title>Calendario de turnos</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#c4571a">
 <link rel="icon" href="icon-192.png">
@@ -75,11 +75,26 @@ summary small{font-weight:400;color:var(--mut);font-size:12px;margin-left:auto;t
 details[open]>summary small{display:none}
 details[open]>summary{margin-bottom:10px}
 footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;padding-top:12px;border-top:1px solid var(--bd)}
+.aviso{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;background:var(--w);color:var(--wt);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-weight:600;font-size:15px;line-height:1.4}
+.aviso[hidden]{display:none}
+.aviso button{background:none;border:0;color:inherit;font-size:22px;line-height:1;cursor:pointer;padding:0 4px}
+#sp{position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(#d66422,#963e10);color:#fff;text-align:center;transition:opacity .5s}
+#sp.out{opacity:0;pointer-events:none}
+#sp h2{margin:14px 0 0;font-size:28px}
+#sp p{margin:0;color:#ffecd6;font-size:15px}
+#sp small{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom,0px));font-size:12px;color:#ffecd6;line-height:1.6}
+#sp small b{color:#fff;font-size:13px}
+.sb{width:140px;height:6px;border-radius:6px;background:#fff;overflow:hidden;margin-top:12px}
+.sb i{display:block;height:100%;width:0;background:#f2b33d;animation:ld 1.2s ease forwards}
+@keyframes ld{to{width:100%}}
+@media (prefers-reduced-motion:reduce){#sp{transition:none}.sb i{animation:none;width:100%}}
 </style>
 </head>
 <body>
-<h1>⛏️ Calendario de turnos mineros</h1>
+<div id="sp"><svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true"><rect x="10" y="18" width="130" height="122" rx="16" fill="#fff"/><rect x="10" y="18" width="130" height="34" rx="16" fill="#4a3300"/><rect x="10" y="34" width="130" height="18" fill="#4a3300"/><rect x="42" y="8" width="9" height="24" rx="4" fill="#f2b33d"/><rect x="99" y="8" width="9" height="24" rx="4" fill="#f2b33d"/><g fill="#f2b33d"><rect x="26" y="64" width="20" height="18" rx="4"/><rect x="52" y="64" width="20" height="18" rx="4"/><rect x="78" y="64" width="20" height="18" rx="4"/><rect x="104" y="64" width="20" height="18" rx="4"/><rect x="26" y="88" width="20" height="18" rx="4"/><rect x="52" y="88" width="20" height="18" rx="4"/><rect x="78" y="88" width="20" height="18" rx="4"/></g><g fill="#cfe8d5"><rect x="104" y="88" width="20" height="18" rx="4"/><rect x="26" y="112" width="20" height="18" rx="4"/><rect x="52" y="112" width="20" height="18" rx="4"/><rect x="78" y="112" width="20" height="18" rx="4"/><rect x="104" y="112" width="20" height="18" rx="4"/></g></svg><h2>Calendario de turnos</h2><p>Tu turno, siempre a la mano</p><div class="sb"><i></i></div><small>© 2026 Derechos reservados.<br><b>By Dixon Cortés</b></small></div>
+<h1>⛏️ Calendario de turnos</h1>
 <p class="sub">Elige tu régimen, el tipo de turno y la fecha de subida.</p>
+<div class="aviso" id="av" hidden></div>
 
 <div class="card">
   <p class="lbl">Resumen de hoy</p>
@@ -122,7 +137,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
   <div class="leg"><span><i style="background:var(--w)"></i>Turno día</span><span><i style="background:var(--n)"></i>Turno noche</span><span><i style="background:var(--r)"></i>Descanso</span><span><i style="background:#d7a3d1"></i>Vacaciones</span></div>
 </div>
 
-<footer>© 2026 Derechos reservados. By Dixon Cortés</footer>
+<footer>© 2026 Derechos reservados.<br>By Dixon Cortés</footer>
 
 <script>
 var PRESETS=[[4,3],[4,4],[5,2],[7,7],[8,6],[10,5],[14,14],[20,10]];
@@ -258,7 +273,24 @@ function sums(){
   var r=vrange();
   $("sm2").textContent=r?fd(r[0])+" – "+fd(r[1]):"Sin vacaciones";
 }
-function all(){build();vbuild();render();vcalc();sums();save()}
+var avOff=false;
+function avisos(){
+  var el=$("av");
+  if(avOff){el.hidden=true;return}
+  var t=utc(iso(now))+1,P=pos(t),r=VR,m=[];
+  if(r&&t==r[0])m.push("Mañana comienzan tus vacaciones");
+  else if(!P.v){
+    var re=r&&t==r[1]+1;
+    if(P.k==0)m.push(re?"Mañana es tu reintegro y tu subida":"Mañana es tu subida");
+    else if(re)m.push("Mañana es tu reintegro");
+    if(P.k==st.w-1)m.push("Mañana es tu bajada");
+  }
+  if(!m.length){el.hidden=true;return}
+  el.innerHTML='<div>🔔 '+m.join('<br>🔔 ')+'</div><button id="avx" aria-label="Cerrar aviso">×</button>';
+  el.hidden=false;
+}
+$("av").onclick=function(e){if(e.target.id=="avx"){avOff=true;this.hidden=true}};
+function all(){build();vbuild();render();vcalc();sums();avisos();save()}
 $("presets").onclick=function(e){var b=e.target.closest("button");if(!b)return;st.w=+b.dataset.w;st.r=+b.dataset.r;all()};
 $("types").onclick=function(e){var b=e.target.closest("button");if(!b)return;st.type=b.dataset.t;all()};
 $("w").onchange=function(){st.w=Math.max(1,Math.min(60,+this.value||1));all()};
@@ -270,6 +302,7 @@ $("nx").onclick=function(){st.m++;if(st.m>11){st.m=0;st.y++}render()};
 $("hy").onclick=function(){st.y=now.getFullYear();st.m=now.getMonth();render()};
 if(!sv){$("dt").open=true}
 all();
+setTimeout(function(){var s=$("sp");s.classList.add("out");setTimeout(function(){s.remove()},600)},1300);
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
 </script>
 </body>
