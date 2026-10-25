@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="only light" id="cs">
+<script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("tema")||"light")}catch(e){document.documentElement.setAttribute("data-theme","light")}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Calendario de turnos</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -20,7 +22,7 @@
 
 <style>
 :root{--bg:#f6f4ef;--card:#fff;--tx:#1d1d1b;--mut:#6b6a64;--bd:#ddd9cf;--w:#f2b33d;--wt:#4a3300;--n:#4b57b8;--nt:#fff;--r:#cfe8d5;--rt:#17432a;--ac:#c4571a;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:only light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171715;--card:#222220;--tx:#f0eee7;--mut:#a09e94;--bd:#3a3935;--w:#b8841f;--wt:#fff6df;--n:#6a76d6;--r:#27493a;--rt:#d3f0dd;--ac:#ee8446;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#171715;--card:#222220;--tx:#f0eee7;--mut:#a09e94;--bd:#3a3935;--w:#b8841f;--wt:#fff6df;--n:#6a76d6;--r:#27493a;--rt:#d3f0dd;--ac:#ee8446;color-scheme:dark}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -86,6 +88,8 @@ details[open]>summary{margin-bottom:10px}
 footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;padding-top:12px;border-top:1px solid var(--bd)}
 .aviso{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;background:var(--w);color:var(--wt);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-weight:600;font-size:15px;line-height:1.4}
 .aviso[hidden]{display:none}
+.th{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));right:14px;width:38px;height:38px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;font-size:17px;cursor:pointer}
+.sub{padding-right:46px}
 .aviso button{background:none;border:0;color:inherit;font-size:22px;line-height:1;cursor:pointer;padding:0 4px}
 #sp{position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(#d66422,#963e10);color:#fff;text-align:center;transition:opacity .5s}
 #sp.out{opacity:0;pointer-events:none}
@@ -103,6 +107,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 </head>
 <body>
 <div id="sp"><svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true"><rect x="10" y="18" width="130" height="122" rx="16" fill="#fff"/><rect x="10" y="18" width="130" height="34" rx="16" fill="#4a3300"/><rect x="10" y="34" width="130" height="18" fill="#4a3300"/><rect x="42" y="8" width="9" height="24" rx="4" fill="#f2b33d"/><rect x="99" y="8" width="9" height="24" rx="4" fill="#f2b33d"/><g fill="#f2b33d"><rect x="26" y="64" width="20" height="18" rx="4"/><rect x="52" y="64" width="20" height="18" rx="4"/><rect x="78" y="64" width="20" height="18" rx="4"/><rect x="104" y="64" width="20" height="18" rx="4"/><rect x="26" y="88" width="20" height="18" rx="4"/><rect x="52" y="88" width="20" height="18" rx="4"/><rect x="78" y="88" width="20" height="18" rx="4"/></g><g fill="#cfe8d5"><rect x="104" y="88" width="20" height="18" rx="4"/><rect x="26" y="112" width="20" height="18" rx="4"/><rect x="52" y="112" width="20" height="18" rx="4"/><rect x="78" y="112" width="20" height="18" rx="4"/><rect x="104" y="112" width="20" height="18" rx="4"/></g></svg><h2>Calendario de turnos</h2><p>Tu turno, siempre a la mano</p><div class="sb"><i></i></div><small>© 2026 Derechos reservados.<br><b>by Dixon Cortés</b></small></div>
+<button id="th" class="th" aria-label="Cambiar tema claro u oscuro">🌙</button>
 <h1>⛏️ Calendario de turnos</h1>
 <p class="sub">Elige tu régimen, el tipo de turno y la fecha de subida.</p>
 <div class="aviso" id="av" hidden></div>
@@ -285,6 +290,12 @@ function sums(){
   $("sm2").textContent=r?fd(r[0])+" – "+fd(r[1]):"Sin vacaciones";
 }
 var avOff=false;
+(function(){
+  var th=$("th"),root=document.documentElement;
+  function lbl(){var dk=root.getAttribute("data-theme")=="dark";var m=document.getElementById("cs");if(m)m.content=dk?"dark":"only light";th.textContent=root.getAttribute("data-theme")=="dark"?"☀️":"🌙"}
+  lbl();
+  th.onclick=function(){var d=root.getAttribute("data-theme")=="dark"?"light":"dark";root.setAttribute("data-theme",d);try{localStorage.setItem("tema",d)}catch(e){}lbl()};
+})();
 function avisos(){
   var el=$("av");
   if(avOff){el.hidden=true;return}
