@@ -89,6 +89,8 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 .aviso button{background:none;border:0;color:inherit;font-size:22px;line-height:1;cursor:pointer;padding:0 4px}
 #sp{position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(#d66422,#963e10);color:#fff;text-align:center;transition:opacity .5s}
 #sp.out{opacity:0;pointer-events:none}
+#sp{animation:spx .3s ease 4s forwards}
+@keyframes spx{to{opacity:0;visibility:hidden}}
 #sp h2{margin:14px 0 0;font-size:28px}
 #sp p{margin:0;color:#ffecd6;font-size:15px}
 #sp small{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom,0px));font-size:12px;color:#ffecd6;line-height:1.6}
