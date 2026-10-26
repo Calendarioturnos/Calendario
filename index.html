@@ -9,7 +9,10 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#c4571a">
 <link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Turnos">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-9B751MZNGY"></script>
 <script>
@@ -95,6 +98,13 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 #sp.out{opacity:0;pointer-events:none}
 #sp{animation:spx .3s ease 4s forwards}
 @keyframes spx{to{opacity:0;visibility:hidden}}
+.sbtn{width:100%;margin-top:10px;padding:12px;border:0;border-radius:10px;background:var(--ac);color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+.sgi{border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin-top:10px}
+.sgt{font-weight:700}
+.sgd{font-size:13px;color:var(--mut);margin:2px 0}
+.sgd b{color:var(--tx)}
+.sgi .chip{margin-top:8px}
+.sgh{font-size:13px;color:var(--mut);margin-top:10px}
 #sp h2{margin:14px 0 0;font-size:28px}
 #sp p{margin:0;color:#ffecd6;font-size:15px}
 #sp small{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom,0px));font-size:12px;color:#ffecd6;line-height:1.6}
@@ -134,6 +144,12 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 
 <details class="card" id="dv"><summary><span>Vacaciones</span><small id="sm2"></small></summary>
   <div class="chips" id="vt"></div>
+  <div id="sg" class="sg">
+    <p class="lbl" style="margin-top:14px">Sugerir mejor fecha</p>
+    <div class="row"><label>Días hábiles de vacaciones<input type="number" id="sn" min="1" max="60" value="15"></label></div>
+    <button id="sb" class="sbtn" type="button">Ver sugerencias del mes del calendario</button>
+    <div id="sr"></div>
+  </div>
   <div id="vbox" style="display:none">
     <div class="row">
       <label>Inicio<input type="date" id="vs"></label>
@@ -153,7 +169,8 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
   <div class="leg"><span><i style="background:var(--w)"></i>Turno día</span><span><i style="background:var(--n)"></i>Turno noche</span><span><i style="background:var(--r)"></i>Descanso</span><span><i style="background:#d7a3d1"></i>Vacaciones</span></div>
 </div>
 
-<footer>© 2026 Dixon Cortés. Derechos reservados.<br><a href="acerca.html">Acerca de</a> · <a href="privacidad.html">Privacidad</a></footer>
+<footer>© 2026 Derechos reservados.<br>by Dixon Cortés</footer>
+
 <script>
 var PRESETS=[[4,3],[4,4],[5,2],[7,7],[8,6],[10,5],[14,14],[20,10]];
 var MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
@@ -212,7 +229,7 @@ function turnos(cyc,s0,y,m,n){
     var rr=Pt.r,dd=tod-rr[0]+1,tt=rr[1]-rr[0]+1,big,l1,pct,fl=rr[1]-tod,l2="Reintegro el "+fd(rr[1]+1);
     if(st.vac.mode=="H"){
       var el=0,nv=Math.max(1,Math.min(120,st.vac.n|0||15)),tw=new Date(tod*864e5).getUTCDay();
-      for(var q=rr[0];q<=tod;q++){var wq=new Date(q*864e5).getUTCDay();if(wq!=0&&wq!=6)el++}
+      for(var q=rr[0];q<=tod;q++){var wq=new Date(q*864e5).getUTCDay();if(wq!=0&&wq!=6&&!esFer(q))el++}
       big="Hoy: día "+el+" de "+nv+" de vacaciones (hábiles)"+((tw==0||tw==6)?" · fin de semana":"");
       pct=Math.round(el/nv*100);
       l1=el>=nv?"Hoy es tu último día hábil de vacaciones":"Faltan "+(nv-el)+((nv-el)==1?" día hábil":" días hábiles")+" para terminar ("+pl(fl)+" corridos)";
@@ -237,12 +254,56 @@ function turnos(cyc,s0,y,m,n){
   }
   $("tl").innerHTML=hy;
 }
+var FER={"2026-01-01": "Año Nuevo", "2026-04-03": "Viernes Santo", "2026-04-04": "Sábado Santo", "2026-05-01": "Día del Trabajo", "2026-05-21": "Glorias Navales", "2026-06-21": "Pueblos Indígenas", "2026-06-29": "San Pedro y San Pablo", "2026-07-16": "Virgen del Carmen", "2026-08-15": "Asunción de la Virgen", "2026-09-18": "Fiestas Patrias", "2026-09-19": "Glorias del Ejército", "2026-10-12": "Encuentro de Dos Mundos", "2026-10-31": "Iglesias Evangélicas", "2026-11-01": "Todos los Santos", "2026-12-08": "Inmaculada Concepción", "2026-12-25": "Navidad", "2027-01-01": "Año Nuevo", "2027-03-26": "Viernes Santo", "2027-03-27": "Sábado Santo", "2027-05-01": "Día del Trabajo", "2027-05-21": "Glorias Navales", "2027-06-20": "Pueblos Indígenas", "2027-06-28": "San Pedro y San Pablo", "2027-07-16": "Virgen del Carmen", "2027-08-15": "Asunción de la Virgen", "2027-09-17": "Fiestas Patrias (feriado adicional)", "2027-09-18": "Fiestas Patrias", "2027-09-19": "Glorias del Ejército", "2027-10-11": "Encuentro de Dos Mundos", "2027-10-31": "Iglesias Evangélicas", "2027-11-01": "Todos los Santos", "2027-12-08": "Inmaculada Concepción", "2027-12-25": "Navidad"};
+var FERANIOS=[2026,2027];
+function dstr(d){return new Date(d*864e5).toISOString().slice(0,10)}
+function esFer(d){return FER.hasOwnProperty(dstr(d))}
+function libre(d){var w=new Date(d*864e5).getUTCDay();return w==0||w==6||esFer(d)}
+function fdw(d){return new Date(d*864e5).toLocaleDateString("es-CL",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"}).replace(/\./g,"")}
 function mod(a,b){return((a%b)+b)%b}
+function sugerir(y,m,n){
+  var a0=Date.UTC(y,m,1)/864e5,dias=new Date(Date.UTC(y,m+1,0)).getUTCDate(),res=[],s0=utc(st.start),cyc=st.w+st.r,reset=st.vac.reset;
+  for(var i=0;i<dias;i++){
+    var s=a0+i;
+    if(mod(s-s0,cyc)!=0)continue;
+    var c=0,e=s-1;while(c<n){e++;if(!libre(e))c++}
+    var antes=st.r,k2=mod(e+1-s0,cyc),despues=(!reset&&k2>=st.w)?cyc-k2:0;
+    var nom=[],tr=0;
+    for(var d=s;d<=e;d++){var w=new Date(d*864e5).getUTCDay();if(esFer(d)&&w!=0&&w!=6)nom.push(FER[dstr(d)]);if(mod(d-s0,cyc)<st.w)tr++}
+    res.push({s:s,e:e,b0:s-antes,b1:e+despues,tot:(e-s+1)+antes+despues,fer:nom,tr:tr,ant:antes,des:despues});
+  }
+  res.sort(function(a,b){return b.tot-a.tot||a.s-b.s});
+  return res.slice(0,3);
+}
+function mostrarSug(){
+  var n=Math.max(1,Math.min(60,+$("sn").value||15)),y=st.y,m=st.m,box=$("sr");
+  if(FERANIOS.indexOf(y)<0){box.innerHTML='<div class="sgh">Aún no tengo los feriados de '+y+'. Cambia el calendario a un mes de 2026 o 2027.</div>';return}
+  var r=sugerir(y,m,n),mes=MESES[m]+" "+y;
+  if(!r.length){box.innerHTML='<div class="sgh">No hay una subida en '+mes+'. Tus vacaciones deben partir el día que termina tu descanso, así que prueba con otro mes.</div>';return}
+  var h='<div class="sgh">Mejores inicios en '+mes+' para '+n+' días hábiles de vacaciones, partiendo el día que termina tu descanso:</div>';
+  r.forEach(function(x,i){
+    h+='<div class="sgi"><div class="sgt">'+(i+1)+'. Inicia el '+fdw(x.s)+' (termina tu descanso)</div>'+
+      '<div class="sgd">Vacaciones hasta el '+fdw(x.e)+'</div>'+
+      '<div class="sgd"><b>'+x.tot+' días seguidos</b> sin trabajar ('+fdw(x.b0)+' al '+fdw(x.b1)+'), con '+(x.ant+x.des)+' días de descanso de tu turno</div>'+
+      (x.fer.length?'<div class="sgd">Feriados: '+x.fer.join(", ")+'</div>':'')+
+      '<div class="sgd">Cubre '+x.tr+' días de trabajo de tu turno</div>'+
+      '<button class="chip" data-s="'+dstr(x.s)+'" data-n="'+n+'">Usar esta fecha</button></div>';
+  });
+  h+='<div class="sgh">Cuenta solo feriados nacionales de Chile, sin los regionales. Confirma las fechas con la normativa oficial.</div>';
+  box.innerHTML=h;
+}
+$("sb").onclick=mostrarSug;
+$("sr").onclick=function(e){
+  var b=e.target.closest("button");if(!b)return;
+  st.vac.on=true;st.vac.s=b.dataset.s;st.vac.n=+b.dataset.n;st.vac.mode="H";
+  var p=b.dataset.s.split("-");st.y=+p[0];st.m=+p[1]-1;
+  all();$("dv").open=true;$("vr").scrollIntoView({block:"nearest"});
+};
 function vrange(){
   var v=st.vac;if(!v.on||!v.s)return null;
   var a=utc(v.s),n=Math.max(1,Math.min(120,v.n|0||15)),b;
   if(v.mode=="C")b=a+n-1;
-  else{var c=0;b=a-1;while(c<n){b++;var wd=new Date(b*864e5).getUTCDay();if(wd!=0&&wd!=6)c++}}
+  else{var c=0;b=a-1;while(c<n){b++;var wd=new Date(b*864e5).getUTCDay();if(wd!=0&&wd!=6&&!esFer(b))c++}}
   return [a,b];
 }
 var VR=null;
@@ -255,19 +316,19 @@ function pos(d){
 function vcalc(){
   var r=vrange(),el=$("vr");
   if(!r){el.innerHTML="";return}
-  var cyc=st.w+st.r,s0=utc(st.start),tr=0,de=0,hab=0;
+  var cyc=st.w+st.r,s0=utc(st.start),tr=0,de=0,hab=0,fer=0;
   for(var d=r[0];d<=r[1];d++){
     if(mod(d-s0,cyc)<st.w)tr++;else de++;
-    var wk=new Date(d*864e5).getUTCDay();if(wk!=0&&wk!=6)hab++;
+    var wk=new Date(d*864e5).getUTCDay();if(wk!=0&&wk!=6&&!esFer(d))hab++;if(wk!=0&&wk!=6&&esFer(d))fer++;
   }
   var tot=r[1]-r[0]+1,rt=r[1]+1,kk=mod(rt-s0,cyc),vuelta;
   if(st.vac.reset)vuelta="Subida el "+fd(rt)+" (nuevo ciclo)";
   else if(kk<st.w)vuelta="Día "+(kk+1)+" de "+st.w+" de turno";
   else vuelta="En descanso (día "+(kk-st.w+1)+" de "+st.r+"), subes el "+fd(rt+cyc-kk);
   var L=function(a,b){return '<div class="l"><span>'+a+'</span><b>'+b+'</b></div>'};
-  el.innerHTML=L("Vacaciones",fd(r[0])+" – "+fd(r[1]))+L("Días corridos",tot)+L("Días hábiles (lun–vie)",hab)+
+  el.innerHTML=L("Vacaciones",fd(r[0])+" – "+fd(r[1]))+L("Días corridos",tot)+L("Días hábiles (lun–vie)",hab)+(fer?L("Feriados que no se descuentan",fer):"")+
     L("Cubren de tu turno",tr+" de trabajo + "+de+" de descanso")+L("Reintegro",fd(rt))+L("Al volver",vuelta)+
-    '<small>No considera feriados ni reglas propias de tu empresa o contrato.</small>';
+    '<small>Los feriados nacionales de Chile (2026 y 2027) no se descuentan de tus vacaciones. Revisa las reglas de tu empresa o contrato.</small>';
 }
 function vbuild(){
   var v=st.vac;
