@@ -151,7 +151,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 <div id="sp"><svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true"><rect x="10" y="18" width="130" height="122" rx="16" fill="#fff"/><rect x="10" y="18" width="130" height="34" rx="16" fill="#4a3300"/><rect x="10" y="34" width="130" height="18" fill="#4a3300"/><rect x="42" y="8" width="9" height="24" rx="4" fill="#f2b33d"/><rect x="99" y="8" width="9" height="24" rx="4" fill="#f2b33d"/><g fill="#f2b33d"><rect x="26" y="64" width="20" height="18" rx="4"/><rect x="52" y="64" width="20" height="18" rx="4"/><rect x="78" y="64" width="20" height="18" rx="4"/><rect x="104" y="64" width="20" height="18" rx="4"/><rect x="26" y="88" width="20" height="18" rx="4"/><rect x="52" y="88" width="20" height="18" rx="4"/><rect x="78" y="88" width="20" height="18" rx="4"/></g><g fill="#cfe8d5"><rect x="104" y="88" width="20" height="18" rx="4"/><rect x="26" y="112" width="20" height="18" rx="4"/><rect x="52" y="112" width="20" height="18" rx="4"/><rect x="78" y="112" width="20" height="18" rx="4"/><rect x="104" y="112" width="20" height="18" rx="4"/></g></svg><h2>Calendario de turnos</h2><p>Tu turno, siempre a la mano</p><div class="sb"><i></i></div><small>© 2026 Derechos reservados.<br><b>by Dixon Cortés</b></small></div>
 <button id="th" class="th" aria-label="Cambiar tema claro u oscuro">🌙</button>
 <h1>⛏️ Calendario de turnos</h1>
-<p class="sub">Elige tu régimen, el tipo de turno y la fecha de subida.</p>
+<p class="sub">Elige tu régimen, el tipo de turno y tu primer día de turno.</p>
 <div class="aviso" id="av" hidden></div>
 
 <div class="card">
@@ -169,7 +169,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
   <p class="lbl" style="margin-top:12px">Tipo de turno</p>
   <div class="chips" id="types"></div>
   <div class="row">
-    <label>Primer día de trabajo (subida)<input type="date" id="s"></label>
+    <label>Primer día de turno (subes la tarde anterior)<input type="date" id="s"></label>
   </div>
   <p class="hint">También puedes tocar un día del calendario para marcarlo como inicio de turno.</p>
 </details>
@@ -186,6 +186,28 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
     <p class="lbl" style="margin-top:12px">Al volver</p>
     <div class="chips" id="vb"></div>
     <div class="vr" id="vr"></div>
+
+    <div style="margin-top:16px;border-top:1px solid var(--bd);padding-top:14px">
+      <p class="lbl">SUGERIR MEJOR FECHA</p>
+      <p class="lbl">Días hábiles de vacaciones</p>
+      <div class="row">
+        <label>Cantidad
+          <input type="number" id="sug-dias" min="1" max="30" value="15">
+        </label>
+      </div>
+
+      <p class="lbl" style="margin-top:12px">Modo de sugerencia</p>
+      <div class="chips" id="sug-modos">
+        <button class="chip on" data-modo="descanso" type="button">Máximo descanso</button>
+        <button class="chip" data-modo="ingresos" type="button">Maximizar ingresos</button>
+      </div>
+
+      <button class="chip on" id="btn-sugerir" type="button" style="margin-top:14px;width:100%;justify-content:center;padding:12px">
+        Ver sugerencias (próximos 6 meses)
+      </button>
+
+      <div id="sug-resultados" style="margin-top:14px"></div>
+    </div>
   </div>
 </details>
 
@@ -666,8 +688,13 @@ function render(){
       W++;
       var night=st.type=="N"||(st.type=="M"&&k>=Math.ceil(st.w/2));
       cls=night?"N":"W";tag=night?"Noche":"Día";
-      if(k==0)tag="Subida";else if(k==st.w-1)tag="Bajada";
-    }else{R++;cls="R";tag="Libre"}
+      // Último día de turno (tarde) = Día/Noche / Bajada
+      if(k==st.w-1)tag=(night?"Noche":"Día")+" / Bajada";
+    }else{
+      R++;cls="R";tag="Libre";
+      // Último día de descanso (tarde) = Libre / Subida
+      if(k==cyc-1)tag="Libre / Subida";
+    }
     var holiday=holidayMap[ds];
     h+='<div role="button" tabindex="0" aria-label="'+d+' de '+MESES[m]+', '+tag+(holiday?', feriado: '+holiday.name:'')+'" class="d '+cls+(ds==td?' today':'')+(holiday?' holiday':'')+'" data-d="'+ds+'"'+(holiday?' data-holiday="1"':'')+'>'+d+'<small>'+tag+'</small>'+(holiday?'<span class="holiday-mark" aria-hidden="true">✦</span>':'')+'</div>';
   }
@@ -716,7 +743,7 @@ function turnos(cyc,s0,y,m,n){
   }else{
     var j=k-st.w+1,g=cyc-k;
     hy='<div class="hoy"><p class="big">Hoy: día '+j+' de '+st.r+' de descanso</p>'+
-      '<p>Faltan '+pl(g)+' para volver a subir (subida el '+fd(tod+g)+')</p>'+
+      '<p>'+(g==1?'Hoy es tu subida (en la tarde)':'Faltan '+pl(g-1)+' para tu subida (el '+fd(tod+g-1)+', en la tarde)')+'</p>'+
       '<div class="bar"><div style="width:'+Math.round(j/st.r*100)+'%"></div></div></div>';
   }
   $("tl").innerHTML=hy;
@@ -726,12 +753,27 @@ function vrange(){
   var v=st.vac;if(!v.on||!v.s)return null;
   var a=utc(v.s),n=Math.max(1,Math.min(120,v.n|0||15)),b;
   if(v.mode=="C")b=a+n-1;
-  else{var c=0;b=a-1;while(c<n){b++;var wd=new Date(b*864e5).getUTCDay();if(wd!=0&&wd!=6)c++}}
+  else{
+    // Hábiles: lun-vie y que NO sea feriado nacional (el feriado no descuenta vacaciones)
+    var c=0;b=a-1;
+    while(c<n){
+      b++;
+      var wd=new Date(b*864e5).getUTCDay();
+      if(wd==0||wd==6)continue;
+      var ds=new Date(b*864e5);
+      var key=ds.getUTCFullYear()+"-"+String(ds.getUTCMonth()+1).padStart(2,"0")+"-"+String(ds.getUTCDate()).padStart(2,"0");
+      var fer=(typeof getChileHolidays==="function"?getChileHolidays(ds.getUTCFullYear()):[]||[]).some(function(h){return h.date==key});
+      if(fer)continue;
+      c++;
+    }
+  }
   return [a,b];
 }
 var VR=null;
 function pos(d){
   var r=VR,cyc=st.w+st.r,base=utc(st.start);
+  // Vacaciones = bloque continuo: todos los días del rango se marcan Vacac.
+  // Al terminar el rango, vuelve el turno normal (libres verdes).
   if(r&&d>=r[0]&&d<=r[1])return{v:true,k:0,r:r};
   if(r&&st.vac.reset&&d>r[1])base=r[1]+1;
   return{k:mod(d-base,cyc)};
@@ -745,9 +787,9 @@ function vcalc(){
     var wk=new Date(d*864e5).getUTCDay();if(wk!=0&&wk!=6)hab++;
   }
   var tot=r[1]-r[0]+1,rt=r[1]+1,kk=mod(rt-s0,cyc),vuelta;
-  if(st.vac.reset)vuelta="Subida el "+fd(rt)+" (nuevo ciclo)";
+  if(st.vac.reset)vuelta="Subida la tarde del "+fd(rt-1)+" (nuevo ciclo)";
   else if(kk<st.w)vuelta="Día "+(kk+1)+" de "+st.w+" de turno";
-  else vuelta="En descanso (día "+(kk-st.w+1)+" de "+st.r+"), subes el "+fd(rt+cyc-kk);
+  else vuelta="En descanso (día "+(kk-st.w+1)+" de "+st.r+"), subes la tarde del "+fd(rt+cyc-kk-1);
   var L=function(a,b){return '<div class="l"><span>'+a+'</span><b>'+b+'</b></div>'};
   el.innerHTML=L("Vacaciones",fd(r[0])+" – "+fd(r[1]))+L("Días corridos",tot)+L("Días hábiles (lun–vie)",hab)+
     L("Cubren de tu turno",tr+" de trabajo + "+de+" de descanso")+L("Reintegro",fd(rt))+L("Al volver",vuelta)+
@@ -768,7 +810,7 @@ $("vb").onclick=function(e){var b=e.target.closest("button");if(!b)return;st.vac
 $("vs").onchange=function(){st.vac.s=this.value;if(this.value){var p=this.value.split("-");st.y=+p[0];st.m=+p[1]-1}all()};
 $("vn").onchange=function(){st.vac.n=Math.max(1,Math.min(120,+this.value||1));all()};
 function sums(){
-  $("sm1").textContent=st.w+"×"+st.r+" · "+({D:"Día",N:"Noche",M:"Día y noche"}[st.type])+" · subida "+fd(utc(st.start));
+  $("sm1").textContent=st.w+"×"+st.r+" · "+({D:"Día",N:"Noche",M:"Día y noche"}[st.type])+" · sube "+fd(utc(st.start)-1);
   var r=vrange();
   $("sm2").textContent=r?fd(r[0])+" – "+fd(r[1]):"Sin vacaciones";
 }
@@ -785,9 +827,9 @@ function avisos(){
   var t=utc(iso(now))+1,P=pos(t),r=VR,m=[];
   if(r&&t==r[0])m.push("Mañana comienzan tus vacaciones");
   else if(!P.v){
-    var re=r&&t==r[1]+1;
-    if(P.k==0)m.push(re?"Mañana es tu reintegro y tu subida":"Mañana es tu subida");
-    else if(re)m.push("Mañana es tu reintegro");
+    var re=r&&t==r[1]+1,cyc=st.w+st.r;
+    if(P.k==cyc-1)m.push(re?"Mañana es tu reintegro y tu subida (en la tarde)":"Mañana es tu subida (en la tarde)");
+    else if(re)m.push(P.k==0?"Mañana es tu reintegro (subes hoy en la tarde)":"Mañana es tu reintegro");
     if(P.k==st.w-1)m.push("Mañana es tu bajada");
   }
   if(!m.length){el.hidden=true;return}
@@ -836,7 +878,7 @@ function prepareMonthExport(){
  var title=$('mt').textContent,year=st.y,month=st.m,name='turnos-'+year+'-'+String(month+1).padStart(2,'0');
  var cells=Array.from($('g').querySelectorAll('.d')).map(function(cell){return {empty:cell.classList.contains('e'),day:cell.dataset.d?+cell.dataset.d.slice(-2):0,tag:cell.querySelector('small')?.textContent||'',kind:['W','N','R','V'].find(function(k){return cell.classList.contains(k)}),holiday:!!cell.dataset.holiday}});
  var holidays=getChileHolidays(year).filter(function(h){return +h.date.slice(5,7)===month+1});
- var summary=st.w+' × '+st.r+' · '+({D:'Turno día',N:'Turno noche',M:'Turno día y noche'}[st.type])+' · Subida '+new Date(utc(st.start)*864e5).toLocaleDateString('es-CL',{timeZone:'UTC'});
+ var summary=st.w+' × '+st.r+' · '+({D:'Turno día',N:'Turno noche',M:'Turno día y noche'}[st.type])+' · Subida '+new Date((utc(st.start)-1)*864e5).toLocaleDateString('es-CL',{timeZone:'UTC'});
  setTimeout(function(){try{
   var canvas=document.createElement('canvas');canvas.width=1120;canvas.height=2200;var ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas unavailable');
   var css=getComputedStyle(document.documentElement),token=function(n){return css.getPropertyValue('--export-'+n).trim()},width=canvas.width,pad=54,gap=10,cw=(width-pad*2-gap*6)/7,ch=114;
@@ -863,6 +905,347 @@ if(!sv){$("dt").open=true}
 all();
 setTimeout(function(){var s=$("sp");s.classList.add("out");setTimeout(function(){s.remove()},600)},1300);
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+
+
+// ========== SUGERENCIAS INTELIGENTES ==========
+(function(){
+  var modoActual = "descanso";
+  var modos = document.getElementById("sug-modos");
+  if(modos){
+    modos.onclick = function(e){
+      var b = e.target.closest("button");
+      if(!b) return;
+      modoActual = b.dataset.modo;
+      modos.querySelectorAll(".chip").forEach(function(c){ c.classList.remove("on"); });
+      b.classList.add("on");
+    };
+  }
+  var btn = document.getElementById("btn-sugerir");
+  if(btn){
+    btn.onclick = function(){
+      var diasVac = Math.max(1, Math.min(30, +(document.getElementById("sug-dias").value) || 15));
+      var resultados = modoActual === "descanso"
+        ? calcularMaxDescanso(diasVac)
+        : calcularMaxIngresos(diasVac);
+      mostrarSugerencias(resultados, modoActual, diasVac);
+    };
+  }
+
+  function esFeriado(fechaStr){
+    var y = +fechaStr.slice(0,4);
+    var lista = (typeof getChileHolidays === "function" ? getChileHolidays(y) : []) || [];
+    return lista.find(function(h){ return h.date === fechaStr; }) || null;
+  }
+
+  function tipoDiaBase(d){
+    var cyc = st.w + st.r;
+    var base = utc(st.start);
+    var k = ((d - base) % cyc + cyc) % cyc;
+    if(k < st.w) return "W";
+    return "R";
+  }
+
+  function fechaStr(d){
+    var dt = new Date(d * 864e5);
+    return dt.getUTCFullYear() + "-" +
+      String(dt.getUTCMonth() + 1).padStart(2, "0") + "-" +
+      String(dt.getUTCDate()).padStart(2, "0");
+  }
+
+  // Lee el tipo elegido en el formulario: "H" hábiles | "C" corridos
+  function tipoVacacion(){
+    if(st.vac && (st.vac.mode === "H" || st.vac.mode === "C")) return st.vac.mode;
+    var on = document.querySelector("#vm .chip.on");
+    if(on && on.dataset.v) return on.dataset.v;
+    return "H";
+  }
+
+  // Fin del rango tras N días según tipo (H o C). inicio y fin en días UTC enteros.
+  // En hábiles: lun-vie y el feriado nacional NO cuenta (no descuenta del saldo).
+  function finPorTipo(inicioUTC, n, tipo){
+    if(tipo === "C") return inicioUTC + n - 1;
+    var c = 0;
+    var b = inicioUTC - 1;
+    while(c < n){
+      b++;
+      var wd = new Date(b * 864e5).getUTCDay();
+      if(wd === 0 || wd === 6) continue;
+      var fer = esFeriado(fechaStr(b));
+      if(fer) continue; // feriado no descuenta día hábil de vacaciones
+      c++;
+    }
+    return b;
+  }
+
+  function etiquetaTipo(tipo){
+    return tipo === "H" ? "hábiles (lun–vie)" : "corridos";
+  }
+
+  function calcularMaxDescanso(diasVac){
+    var tipo = tipoVacacion();
+    var hoy = utc(iso(now));
+    var finBusqueda = hoy + 183;
+    var opciones = [];
+    var cyc = st.w + st.r;
+    var base = utc(st.start);
+
+    for(var d = hoy; d <= finBusqueda; d++){
+      var k0 = ((d - base) % cyc + cyc) % cyc;
+      if(k0 !== 0) continue; // empezar en subida
+
+      var inicioVac = d;
+      var finVac = finPorTipo(inicioVac, diasVac, tipo);
+
+      // Descanso previo
+      var inicioBloque = inicioVac;
+      var feriados = [];
+      var atras = inicioVac - 1;
+      while(atras >= hoy - 40){
+        var t = tipoDiaBase(atras);
+        var fer = esFeriado(fechaStr(atras));
+        if(t === "R" || fer){
+          inicioBloque = atras;
+          if(fer) feriados.unshift(fer);
+          atras--;
+        } else break;
+      }
+
+      // Feriados dentro del bloque de vacaciones (en hábiles no descuentan)
+      var feriadosNoDescuentan = 0;
+      for(var x = inicioVac; x <= finVac; x++){
+        var fer = esFeriado(fechaStr(x));
+        if(fer && !feriados.some(function(f){ return f.date === fer.date; })){
+          feriados.push(fer);
+          var wd = new Date(x * 864e5).getUTCDay();
+          if(wd !== 0 && wd !== 6) feriadosNoDescuentan++;
+        }
+      }
+
+      // Descanso posterior
+      var finBloque = finVac;
+      var sig = finVac + 1;
+      while(sig <= finVac + 40){
+        var t = tipoDiaBase(sig);
+        var fer = esFeriado(fechaStr(sig));
+        if(t === "R" || fer){
+          finBloque = sig;
+          if(fer && !feriados.some(function(f){ return f.date === fer.date; })) feriados.push(fer);
+          sig++;
+        } else break;
+      }
+
+      var totalBloque = finBloque - inicioBloque + 1;
+      var diasVacRango = finVac - inicioVac + 1; // días corridos del rango de vacaciones
+      var diasLibres = totalBloque - diasVacRango; // libres antes + después (aprox)
+      // Contar libres estrictamente (antes y después del rango de vacaciones)
+      var libresAntes = inicioVac - inicioBloque;
+      var libresDespues = finBloque - finVac;
+      diasLibres = libresAntes + libresDespues;
+
+      opciones.push({
+        inicioBloque: inicioBloque,
+        finBloque: finBloque,
+        inicioVac: inicioVac,
+        finVac: finVac,
+        dias: diasVac,
+        tipo: tipo,
+        feriados: feriados,
+        diasLibres: diasLibres,
+        totalBloque: totalBloque,
+        feriadosNoDescuentan: feriadosNoDescuentan,
+        score: totalBloque * 2 + feriados.length * 4
+      });
+    }
+
+    opciones.sort(function(a,b){ return b.score - a.score; });
+    var unicos = [];
+    opciones.forEach(function(o){
+      if(!unicos.some(function(u){ return Math.abs(u.inicioVac - o.inicioVac) < 3; })){
+        unicos.push(o);
+      }
+    });
+    return unicos.slice(0, 5);
+  }
+
+  function calcularMaxIngresos(diasVac){
+    var hoy = utc(iso(now));
+    var fin = hoy + 183;
+    var cyc = st.w + st.r;
+    var base = utc(st.start);
+    var feriadosTrabajo = [];
+
+    for(var y = now.getFullYear(); y <= now.getFullYear() + 1; y++){
+      (getChileHolidays(y) || []).forEach(function(h){
+        var d = utc(h.date);
+        if(d < hoy || d > fin) return;
+        var k = ((d - base) % cyc + cyc) % cyc;
+        if(k < st.w) feriadosTrabajo.push(h);
+      });
+    }
+    return {
+      feriadosTrabajo: feriadosTrabajo,
+      buenosPeriodos: calcularMaxDescanso(diasVac).slice(0, 4)
+    };
+  }
+
+  function aplicarVacaciones(o){
+    var inicio = o.inicioVac;
+    if(tipoDiaBase(inicio) !== "W"){
+      var t = inicio;
+      while(tipoDiaBase(t) !== "W" && t < inicio + 14) t++;
+      var n = o.dias;
+      var tipo = o.tipo || tipoVacacion();
+      inicio = t;
+      o = {
+        inicioVac: inicio,
+        finVac: finPorTipo(inicio, n, tipo),
+        dias: n,
+        tipo: tipo,
+        inicioBloque: o.inicioBloque,
+        finBloque: o.finBloque,
+        feriados: o.feriados
+      };
+    }
+
+    var tipo = o.tipo || tipoVacacion();
+    var fechaInicio = fechaStr(o.inicioVac);
+    var n = o.dias;
+
+    st.vac.on = true;
+    st.vac.s = fechaInicio;
+    st.vac.n = n;
+    st.vac.mode = tipo; // respeta H o C del formulario
+
+    var p = fechaInicio.split("-");
+    st.y = +p[0];
+    st.m = +p[1] - 1;
+
+    var vs = document.getElementById("vs");
+    var vn = document.getElementById("vn");
+    if(vs) vs.value = fechaInicio;
+    if(vn) vn.value = n;
+
+    if(typeof all === "function") all();
+
+    try {
+      var vt = document.getElementById("vt");
+      if(vt){
+        vt.querySelectorAll(".chip").forEach(function(c){
+          c.classList.toggle("on", c.dataset.v === "1");
+        });
+      }
+      var vm = document.getElementById("vm");
+      if(vm){
+        vm.querySelectorAll(".chip").forEach(function(c){
+          c.classList.toggle("on", c.dataset.v === tipo);
+        });
+      }
+      var vbox = document.getElementById("vbox");
+      if(vbox) vbox.style.display = "block";
+      var dv = document.getElementById("dv");
+      if(dv) dv.open = true;
+    } catch(e){}
+
+    var el = document.getElementById("sug-resultados");
+    if(el){
+      var old = el.querySelector(".sug-ok");
+      if(old) old.remove();
+      var msg = document.createElement("p");
+      msg.className = "hint sug-ok";
+      msg.style.color = "var(--ac)";
+      msg.style.marginTop = "10px";
+      msg.textContent = "✓ "+n+" días "+etiquetaTipo(tipo)+": "+fd(o.inicioVac)+" → "+fd(o.finVac);
+      el.appendChild(msg);
+    }
+  }
+
+  function htmlOpcion(o, i, prefijo){
+    var html = '<div class="t sug-item" data-idx="'+i+'" style="margin-top:10px;cursor:pointer;border:1px solid var(--bd)">';
+    html += '<b>'+prefijo+' · '+(o.totalBloque||'?')+' días seguidos fuera</b>';
+    html += '<div class="l"><span>Vacaciones</span><span>'+o.dias+' días '+etiquetaTipo(o.tipo)+'</span></div>';
+    html += '<div class="l"><span>Días libres (tu turno)</span><span>'+(o.diasLibres!=null?o.diasLibres:0)+'</span></div>';
+    if(o.tipo==="H" && o.feriadosNoDescuentan){
+      html += '<div class="l"><span>Feriados que no descuentan</span><span>'+o.feriadosNoDescuentan+'</span></div>';
+    }
+    html += '<div class="l"><span>Periodo vacaciones</span><span>'+fd(o.inicioVac)+' → '+fd(o.finVac)+'</span></div>';
+    html += '<div class="l"><span>Bloque libre total</span><span>'+fd(o.inicioBloque)+' → '+fd(o.finBloque)+'</span></div>';
+    if(o.feriados.length){
+      html += '<div style="margin-top:8px"><span class="lbl">Feriados incluidos:</span>';
+      o.feriados.forEach(function(f){
+        html += '<div style="margin-top:6px;padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px;line-height:1.35;word-break:break-word">';
+        html += '<div style="color:var(--ac);font-weight:600">'+fd(utc(f.date))+'</div>';
+        html += '<div style="color:var(--mut)">'+f.name+'</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    html += '<div style="margin-top:8px;text-align:right"><span class="chip on" style="padding:6px 12px;font-size:13px">Usar esta fecha</span></div>';
+    html += '</div>';
+    return html;
+  }
+
+  function mostrarSugerencias(data, modo, diasVac){
+    var el = document.getElementById("sug-resultados");
+    if(!el) return;
+    var tipo = tipoVacacion();
+
+    if(modo === "descanso"){
+      if(!data.length){
+        el.innerHTML = '<p class="hint">No se encontraron combinaciones con '+diasVac+' días. Prueba con menos días o revisa tu fecha de subida.</p>';
+        return;
+      }
+      var html = '<p class="lbl">Mejores opciones · '+diasVac+' días '+etiquetaTipo(tipo)+'</p>';
+      html += '<p class="hint">Respeta el tipo elegido en el formulario (Hábiles / Corridos).</p>';
+      data.forEach(function(o, i){ html += htmlOpcion(o, i, '#'+(i+1)); });
+      el.innerHTML = html;
+      el.querySelectorAll(".sug-item").forEach(function(item){
+        item.addEventListener("click", function(){
+          var o = data[+item.dataset.idx];
+          if(!o) return;
+          aplicarVacaciones(o);
+          el.querySelectorAll(".sug-item").forEach(function(x){ x.style.outline = ""; });
+          item.style.outline = "2px solid var(--ac)";
+        });
+      });
+    } else {
+      var html = '';
+      if(data.feriadosTrabajo && data.feriadosTrabajo.length){
+        html += '<p class="lbl">Feriados que te conviene trabajar (pago extra)</p>';
+        data.feriadosTrabajo.forEach(function(f){
+          html += '<div class="t"><b>'+fd(utc(f.date))+'</b>';
+          html += '<div class="l"><span>'+f.name+'</span><span style="color:var(--ac)">Trabajar</span></div></div>';
+        });
+      } else {
+        html += '<p class="hint">No hay feriados en tus días de trabajo en los próximos 6 meses.</p>';
+      }
+
+      html += '<p class="lbl" style="margin-top:16px">Sugerencias de vacaciones · '+etiquetaTipo(tipo)+'</p>';
+      if(data.buenosPeriodos && data.buenosPeriodos.length){
+        html += '<p class="hint">Toca una opción para marcarla</p>';
+        data.buenosPeriodos.forEach(function(o, i){ html += htmlOpcion(o, i, 'Opción '+(i+1)); });
+      } else {
+        html += '<p class="hint">No hay periodos recomendados con '+diasVac+' días.</p>';
+      }
+      el.innerHTML = html;
+      el.querySelectorAll(".sug-item").forEach(function(item){
+        item.addEventListener("click", function(){
+          var o = data.buenosPeriodos[+item.dataset.idx];
+          if(!o) return;
+          aplicarVacaciones(o);
+          el.querySelectorAll(".sug-item").forEach(function(x){ x.style.outline = ""; });
+          item.style.outline = "2px solid var(--ac)";
+        });
+      });
+    }
+  }
+})();
+;
+;
+;
+;
+;
+
+
 </script>
 </body>
 </html>
