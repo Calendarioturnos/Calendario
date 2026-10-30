@@ -215,12 +215,14 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
   <div class="nav"><button id="pv" aria-label="Mes anterior">‹</button><b id="mt"></b><button id="hy" class="hy">Hoy</button><button id="nx" aria-label="Mes siguiente">›</button></div>
   <div class="grid" id="g"></div>
   <div class="leg"><span><i style="background:var(--w)"></i>Turno día</span><span><i style="background:var(--n)"></i>Turno noche</span><span><i style="background:var(--r)"></i>Descanso</span><span><i style="background:#d7a3d1"></i>Vacaciones</span><span class="holiday-key">✦ Feriado nacional</span></div>
-<div class="export-tools"><button class="export-button" id="month-image" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 4-5 5 6"/></svg>Imagen del mes</button><button class="export-button" id="month-pdf" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg>PDF del mes</button></div><p class="hint" id="export-status" role="status"></p><button class="export-button" id="export-retry" hidden>Reintentar</button>
+<div class="export-tools"><button class="export-button" id="month-image" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/></svg>Compartir imagen</button><button class="export-button" id="month-pdf" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>Compartir PDF</button></div>
+<p class="hint" id="export-status" role="status"></p>
+<button class="export-button" id="export-retry" hidden type="button">Reintentar</button>
 <section class="holiday-section" aria-label="Feriados del mes"><h2>Feriados de este mes</h2><div id="holiday-list"></div></section>
 </div>
 
 <dialog id="holiday-dialog" aria-labelledby="holiday-title"><button class="holiday-close" id="holiday-close" aria-label="Cerrar detalle del feriado">×</button><p class="holiday-date" id="holiday-date"></p><h2 id="holiday-title"></h2><p id="holiday-reason"></p><p class="hint">Este feriado no modifica tu turno ni el cálculo de tus vacaciones.</p><div class="holiday-actions"><button class="chip" id="holiday-start">Marcar como inicio de turno</button><button class="chip" id="holiday-done">Cerrar</button></div></dialog>
-<dialog id="export-dialog" aria-labelledby="export-month"><button class="holiday-close" id="export-close" aria-label="Cerrar vista para compartir">×</button><h2 id="export-month"></h2><div class="export-formats"><label><input type="radio" name="export-format" value="png" checked>Imagen PNG</label><label><input type="radio" name="export-format" value="pdf">PDF</label></div><img id="export-preview" alt="Vista del mes con turnos, vacaciones y feriados"><div class="export-actions"><button class="export-button primary" id="export-download">Descargar imagen</button><button class="export-button" id="export-share">Compartir</button></div><p class="hint" id="export-message" role="status"></p></dialog>
+<dialog id="export-dialog" aria-labelledby="export-month"><button class="holiday-close" id="export-close" aria-label="Cerrar vista para compartir">×</button><h2 id="export-month"></h2><p class="lbl" style="margin:0 0 6px">Qué compartir</p><div class="export-formats"><label><input type="radio" name="export-scope" value="mes" checked>Este mes</label><label><input type="radio" name="export-scope" value="anio"><span id="export-year-label">Año</span></label></div><p class="lbl" style="margin:0 0 6px">Formato</p><div class="export-formats"><label><input type="radio" name="export-format" value="png" checked>Imagen PNG</label><label><input type="radio" name="export-format" value="pdf">PDF</label></div><div id="export-layout-row" hidden><p class="lbl" style="margin:0 0 6px">Diseño del PDF del año</p><div class="export-formats"><label><input type="radio" name="export-layout" value="hoja" checked>Una hoja con los 12 meses</label><label><input type="radio" name="export-layout" value="paginas">12 páginas</label></div></div><img id="export-preview" alt="Vista previa del calendario con turnos, vacaciones y feriados"><div class="export-actions"><button class="export-button primary" id="export-download">Descargar imagen</button><button class="export-button" id="export-share">Compartir</button></div><p class="hint" id="export-message" role="status"></p></dialog>
 <footer>© 2026 Dixon Cortés. Derechos reservados.<br><a href="acerca.html">Acerca de</a> · <a href="privacidad.html">Privacidad</a></footer>
 <script>
 /** @license
@@ -700,7 +702,7 @@ function render(){
   }
   $("g").innerHTML=h;turnos(cyc,s0,y,m,n);
   $("holiday-list").innerHTML=monthHolidays.length?monthHolidays.map(function(h){return '<button class="holiday-item" data-h="'+h.date+'"><time datetime="'+h.date+'">'+fd(utc(h.date))+'</time><span>'+h.name+'</span><b aria-hidden="true">›</b></button>'}).join(''):'<p class="hint">'+(holidayYears.includes(y)?'No hay feriados nacionales este mes.':'Feriados disponibles para 2026 y 2027; todavía no hay fechas verificadas para '+y+'.')+'</p>';
-  prepareMonthExport();
+  expCache={};
   $("holiday-list").innerHTML+='<p class="hint">Feriados nacionales de Chile · 2026–2027. No incluye feriados regionales ni electorales extraordinarios.</p>';
 }
 function fd(x){return new Date(x*864e5).toLocaleDateString("es-CL",{day:"numeric",month:"short",timeZone:"UTC"}).replace(".","")}
@@ -856,50 +858,166 @@ $("g").onkeydown=function(e){if(e.key=="Enter"||e.key==" "){var c=e.target.close
 $("pv").onclick=function(){st.m--;if(st.m<0){st.m=11;st.y--}render()};
 $("nx").onclick=function(){st.m++;if(st.m>11){st.m=0;st.y++}render()};
 $("hy").onclick=function(){st.y=now.getFullYear();st.m=now.getMonth();render()};
-var monthExport=null, exportVersion=0, exportFormat='png';
-function exportStatus(message){$('export-status').textContent=message}
+var expCache={},expState={scope:'mes',format:'png',layout:'hoja'},expSeq=0;
+function expCap(t){return t.charAt(0).toUpperCase()+t.slice(1)}
+function expSummary(){return st.w+' × '+st.r+' · '+({D:'Turno día',N:'Turno noche',M:'Turno día y noche'}[st.type])+' · Subida '+new Date((utc(st.start)-1)*864e5).toLocaleDateString('es-CL',{timeZone:'UTC'})}
+function expToken(n){return getComputedStyle(document.documentElement).getPropertyValue('--export-'+n).trim()}
 function exportDownload(blob,name){var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},30000)}
-function exportFile(){if(!monthExport)return null;return exportFormat==='pdf'?monthExport.pdf:monthExport.png}
-function exportName(){return monthExport?monthExport.name+'.'+exportFormat:''}
-function exportDialog(){if(!monthExport)return;$('export-month').textContent=monthExport.title;$('export-preview').src=monthExport.preview;updateExportFormat();$('export-dialog').showModal()}
-function updateExportFormat(){document.querySelectorAll('input[name="export-format"]').forEach(function(r){r.checked=r.value===exportFormat});$('export-download').textContent=exportFormat==='pdf'?'Descargar PDF':'Descargar imagen';var blob=exportFile(),file=blob?new File([blob],exportName(),{type:blob.type}):null;var supported=!!(file&&navigator.share&&navigator.canShare&&navigator.canShare({files:[file]}));$('export-share').hidden=!supported;$('export-message').textContent=supported?'':'Puedes descargar el archivo y adjuntarlo en WhatsApp u otra aplicación.'}
-function closeExport(){$('export-dialog').close()}
-$('export-close').onclick=closeExport;
-$('export-dialog').addEventListener('close',function(){$('month-image').focus()});
-$('month-image').onclick=function(){exportFormat='png';exportDialog()};
-$('month-pdf').onclick=function(){exportFormat='pdf';exportDialog()};
-document.querySelectorAll('input[name="export-format"]').forEach(function(r){r.onchange=function(){exportFormat=r.value;updateExportFormat()}});
-$('export-download').onclick=function(){var blob=exportFile();if(blob)exportDownload(blob,exportName())};
-$('export-share').onclick=function(){var blob=exportFile();if(!blob)return;var file=new File([blob],exportName(),{type:blob.type});if(!navigator.share||!navigator.canShare||!navigator.canShare({files:[file]})){exportDownload(blob,exportName());return}navigator.share({files:[file],title:monthExport.title}).catch(function(e){if(e.name!=='AbortError'){$('export-message').textContent='No se pudo compartir. Usa Descargar para guardar y adjuntar el archivo.'}})};
-$('export-retry').onclick=function(){prepareMonthExport()};
-function prepareMonthExport(){
- var version=++exportVersion;monthExport=null;$('month-image').disabled=true;$('month-pdf').disabled=true;$('export-retry').hidden=true;exportStatus('Preparando archivos…');
- // Snapshot the displayed cells before asynchronous encoding; never recalculate or change the cycle.
- var title=$('mt').textContent,year=st.y,month=st.m,name='turnos-'+year+'-'+String(month+1).padStart(2,'0');
- var cells=Array.from($('g').querySelectorAll('.d')).map(function(cell){return {empty:cell.classList.contains('e'),day:cell.dataset.d?+cell.dataset.d.slice(-2):0,tag:cell.querySelector('small')?.textContent||'',kind:['W','N','R','V'].find(function(k){return cell.classList.contains(k)}),holiday:!!cell.dataset.holiday}});
- var holidays=getChileHolidays(year).filter(function(h){return +h.date.slice(5,7)===month+1});
- var summary=st.w+' × '+st.r+' · '+({D:'Turno día',N:'Turno noche',M:'Turno día y noche'}[st.type])+' · Subida '+new Date((utc(st.start)-1)*864e5).toLocaleDateString('es-CL',{timeZone:'UTC'});
- setTimeout(function(){try{
-  var canvas=document.createElement('canvas');canvas.width=1120;canvas.height=2200;var ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas unavailable');
-  var css=getComputedStyle(document.documentElement),token=function(n){return css.getPropertyValue('--export-'+n).trim()},width=canvas.width,pad=54,gap=10,cw=(width-pad*2-gap*6)/7,ch=114;
-  ctx.fillStyle=token('bg');ctx.fillRect(0,0,width,canvas.height);ctx.textBaseline='top';
-  function text(str,x,y,size,color,bold){ctx.font=(bold?'700 ':'400 ')+size+'px "Segoe UI", Arial, sans-serif';ctx.fillStyle=token(color);ctx.fillText(str,x,y)}
-  function wrap(str,x,y,size,color,max){ctx.font='400 '+size+'px "Segoe UI", Arial, sans-serif';var words=str.split(' '),line='';words.forEach(function(word){var next=line?line+' '+word:word;if(ctx.measureText(next).width>max&&line){text(line,x,y,size,color,false);y+=size*1.45;line=word}else line=next});if(line){text(line,x,y,size,color,false);y+=size*1.45}return y}
-  text('CALENDARIO DE TURNOS',pad,48,23,'muted',true);text(title.charAt(0).toUpperCase()+title.slice(1),pad,89,48,'text',true);
-  var top=wrap(summary,pad,153,22,'muted',width-pad*2)+28;
-  ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].forEach(function(d,i){text(d,pad+i*(cw+gap)+cw/2-20,top,20,'muted',true)});top+=38;
-  cells.forEach(function(cell,i){if(cell.empty)return;var x=pad+(i%7)*(cw+gap),y=top+Math.floor(i/7)*(ch+gap);ctx.fillStyle=token(cell.kind+'-bg');ctx.beginPath();ctx.roundRect(x,y,cw,ch,8);ctx.fill();if(cell.holiday){ctx.strokeStyle=token('holiday');ctx.lineWidth=4;ctx.stroke();text('✦',x+cw-25,y+7,19,'holiday',true)}text(String(cell.day),x+15,y+15,32,cell.kind+'-text',true);text(cell.tag,x+15,y+71,18,cell.kind+'-text',true)});
-  var y=top+Math.ceil(cells.length/7)*(ch+gap)+27;
-  [['W','Turno día'],['N','Turno noche'],['R','Descanso'],['V','Vacaciones']].forEach(function(item,i){var x=pad+i*253;ctx.fillStyle=token(item[0]+'-bg');ctx.fillRect(x,y,22,22);text(item[1],x+32,y,20,'text',false)});y+=44;text('✦ Feriado nacional',pad,y,20,'holiday',true);y+=53;
-  ctx.strokeStyle=token('border');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(width-pad,y);ctx.stroke();y+=25;text('Feriados del mes',pad,y,25,'text',true);y+=42;
-  if(!holidays.length)y=wrap(holidayYears.includes(year)?'No hay feriados nacionales este mes.':'Feriados no verificados para '+year+'.',pad,y,20,'muted',width-pad*2);
-  holidays.forEach(function(h){text(h.date.slice(-2)+' '+MESES[month].slice(0,3),pad,y,21,'holiday',true);y=wrap(h.name,pad+110,y,21,'text',width-pad*2-110)+12});
-  y+=22;y=wrap('Los feriados no modifican tus turnos ni el cálculo de vacaciones. Feriados nacionales verificados para 2026–2027; no incluye feriados regionales ni electorales extraordinarios.',pad,y,18,'muted',width-pad*2);y+=25;text('by Dixon Cortés',pad,y,20,'text',true);y+=55;
-  var output=document.createElement('canvas');output.width=width;output.height=y;var out=output.getContext('2d');if(!out)throw new Error('Canvas unavailable');out.drawImage(canvas,0,0,width,y,0,0,width,y);
-  var preview=output.toDataURL('image/png');output.toBlob(function(blob){if(version!==exportVersion)return;if(!blob){exportFailure();return}try{var PDF=window.jspdf?.jsPDF;if(!PDF)throw new Error('PDF unavailable');var pdf=new PDF({orientation:'portrait',unit:'mm',format:'a4'}),pw=pdf.internal.pageSize.getWidth(),ph=pdf.internal.pageSize.getHeight(),scale=Math.min((pw-20)/width,(ph-20)/y),dw=width*scale,dh=y*scale;pdf.setProperties({title:'Calendario de turnos · '+title,author:'Dixon Cortés'});pdf.addImage(preview,'PNG',(pw-dw)/2,10,dw,dh);monthExport={png:blob,pdf:pdf.output('blob'),name:name,title:'Calendario de turnos · '+title,preview:preview};$('month-image').disabled=false;$('month-pdf').disabled=false;exportStatus('')}catch(e){exportFailure()}},'image/png');
- }catch(e){if(version===exportVersion)exportFailure()}},0);
+
+// Clasificación de cada día: misma regla que usa el calendario en pantalla.
+function dayInfo(dn){
+  var P=pos(dn),k=P.k,cyc=st.w+st.r;
+  if(P.v)return{kind:'V',tag:'Vacac.'};
+  if(k<st.w){var night=st.type=='N'||(st.type=='M'&&k>=Math.ceil(st.w/2)),tag=night?'Noche':'Día';if(k==st.w-1)tag+=' / Bajada';return{kind:night?'N':'W',tag:tag}}
+  var t='Libre';if(k==cyc-1)t='Libre / Subida';return{kind:'R',tag:t};
 }
-function exportFailure(){exportStatus('No se pudieron preparar los archivos.');$('export-retry').hidden=false}
+function monthCells(yr,m){
+  var first=(new Date(yr,m,1).getDay()+6)%7,n=new Date(yr,m+1,0).getDate(),hol={},cells=[];
+  getChileHolidays(yr).forEach(function(h){hol[h.date]=1});
+  for(var i=0;i<first;i++)cells.push({empty:true});
+  for(var d=1;d<=n;d++){var ds=yr+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'),inf=dayInfo(utc(ds));cells.push({empty:false,day:d,tag:inf.tag,kind:inf.kind,holiday:!!hol[ds]})}
+  return cells;
+}
+function mkCanvas(w,h,K){var c=document.createElement('canvas');c.width=Math.round(w*K);c.height=Math.round(h*K);var x=c.getContext('2d');if(!x)throw new Error('Canvas unavailable');x.scale(K,K);return [c,x]}
+function cropCanvas(src,w,h,K){var o=document.createElement('canvas');o.width=Math.round(w*K);o.height=Math.round(h*K);var x=o.getContext('2d');if(!x)throw new Error('Canvas unavailable');x.drawImage(src,0,0,o.width,o.height,0,0,o.width,o.height);return o}
+function mkTools(ctx){
+  function text(str,x,y,size,color,bold,align){ctx.font=(bold?'700 ':'400 ')+size+'px "Segoe UI", Arial, sans-serif';ctx.fillStyle=expToken(color);ctx.textAlign=align||'left';ctx.fillText(str,x,y);ctx.textAlign='left'}
+  function wrap(str,x,y,size,color,max){ctx.font='400 '+size+'px "Segoe UI", Arial, sans-serif';var words=str.split(' '),line='';words.forEach(function(word){var next=line?line+' '+word:word;if(ctx.measureText(next).width>max&&line){text(line,x,y,size,color,false);y+=size*1.45;line=word}else line=next});if(line){text(line,x,y,size,color,false);y+=size*1.45}return y}
+  function lines(str,size,max){ctx.font='400 '+size+'px "Segoe UI", Arial, sans-serif';var words=str.split(' '),out=[],line='';words.forEach(function(w){var n=line?line+' '+w:w;if(ctx.measureText(n).width>max&&line){out.push(line);line=w}else line=n});if(line)out.push(line);return out}
+  return {text:text,wrap:wrap,lines:lines};
+}
+var EXP_NOTE='Feriados nacionales verificados para 2026–2027; no incluye feriados regionales ni electorales extraordinarios.';
+
+function drawMonth(yr,m,K){
+  var width=1120,pad=54,gap=10,cw=(width-pad*2-gap*6)/7,ch=114,cells=monthCells(yr,m),H=2400;
+  var cv=mkCanvas(width,H,K),canvas=cv[0],ctx=cv[1],T=mkTools(ctx),text=T.text,wrap=T.wrap;
+  ctx.fillStyle=expToken('bg');ctx.fillRect(0,0,width,H);ctx.textBaseline='top';
+  var title=expCap(MESES[m]+' '+yr),holidays=getChileHolidays(yr).filter(function(h){return +h.date.slice(5,7)===m+1});
+  text('CALENDARIO DE TURNOS',pad,48,23,'muted',true);text(title,pad,89,48,'text',true);
+  var top=wrap(expSummary(),pad,153,22,'muted',width-pad*2)+28;
+  ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].forEach(function(d,i){text(d,pad+i*(cw+gap)+cw/2-20,top,20,'muted',true)});top+=38;
+  cells.forEach(function(cell,i){if(cell.empty)return;var x=pad+(i%7)*(cw+gap),y0=top+Math.floor(i/7)*(ch+gap);ctx.fillStyle=expToken(cell.kind+'-bg');ctx.beginPath();ctx.roundRect(x,y0,cw,ch,8);ctx.fill();if(cell.holiday){ctx.strokeStyle=expToken('holiday');ctx.lineWidth=4;ctx.stroke();text('✦',x+cw-25,y0+7,19,'holiday',true)}text(String(cell.day),x+15,y0+15,32,cell.kind+'-text',true);text(cell.tag,x+15,y0+71,18,cell.kind+'-text',true)});
+  var y=top+Math.ceil(cells.length/7)*(ch+gap)+27;
+  [['W','Turno día'],['N','Turno noche'],['R','Descanso'],['V','Vacaciones']].forEach(function(item,i){var x=pad+i*253;ctx.fillStyle=expToken(item[0]+'-bg');ctx.fillRect(x,y,22,22);text(item[1],x+32,y,20,'text',false)});y+=44;text('✦ Feriado nacional',pad,y,20,'holiday',true);y+=53;
+  ctx.strokeStyle=expToken('border');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(width-pad,y);ctx.stroke();y+=25;text('Feriados del mes',pad,y,25,'text',true);y+=42;
+  if(!holidays.length)y=wrap(holidayYears.includes(yr)?'No hay feriados nacionales este mes.':'Feriados no verificados para '+yr+'.',pad,y,20,'muted',width-pad*2);
+  holidays.forEach(function(h){text(h.date.slice(-2)+' '+MESES[m].slice(0,3),pad,y,21,'holiday',true);y=wrap(h.name,pad+110,y,21,'text',width-pad*2-110)+12});
+  y+=22;y=wrap(EXP_NOTE,pad,y,18,'muted',width-pad*2);y+=25;text('by Dixon Cortés',pad,y,20,'text',true);y+=55;
+  return {canvas:cropCanvas(canvas,width,y,K),w:width,h:y,title:title};
+}
+
+function drawYear(yr,K){
+  var W=1500,pad=60,gx=40,cols=3,colW=(W-pad*2-gx*(cols-1))/cols,gap=5,cell=(colW-gap*6)/7,ch=cell*0.84,H=5400;
+  var cv=mkCanvas(W,H,K),canvas=cv[0],ctx=cv[1],T=mkTools(ctx),text=T.text,wrap=T.wrap;
+  ctx.fillStyle=expToken('bg');ctx.fillRect(0,0,W,H);ctx.textBaseline='top';
+  text('CALENDARIO DE TURNOS',pad,50,24,'muted',true);text(String(yr),pad,92,72,'text',true);
+  var y=wrap(expSummary(),pad,186,24,'muted',W-pad*2)+16;
+  [['W','Turno día'],['N','Turno noche'],['R','Descanso'],['V','Vacaciones']].forEach(function(it,i){var x=pad+i*276;ctx.fillStyle=expToken(it[0]+'-bg');ctx.fillRect(x,y,24,24);text(it[1],x+34,y+1,22,'text',false)});
+  ctx.strokeStyle=expToken('holiday');ctx.lineWidth=3;ctx.strokeRect(pad+4*276+1.5,y+1.5,21,21);text('Feriado nacional',pad+4*276+34,y+1,22,'holiday',true);
+  y+=62;
+  // Feriados de cada mes, para dibujarlos justo debajo de ese mes
+  var verified=holidayYears.includes(yr),porMes=[],info=[],i0;
+  for(i0=0;i0<12;i0++)porMes.push([]);
+  if(verified)getChileHolidays(yr).forEach(function(h){porMes[+h.date.slice(5,7)-1].push(h)});
+  for(var mm=0;mm<12;mm++){
+    var cells=monthCells(yr,mm),weeks=Math.ceil(cells.length/7);
+    var hl=porMes[mm].map(function(h){return {f:String(+h.date.slice(-2)),ls:T.lines(h.name,19,colW-46)}});
+    var hh=hl.length?hl.reduce(function(a,x){return a+x.ls.length*25+6},0)+10:0;
+    info.push({cells:cells,weeks:weeks,hl:hl,h:70+weeks*(ch+gap)+hh});
+  }
+  var rowGap=28;
+  for(var r=0;r<4;r++){
+    var rowH=Math.max(info[r*3].h,info[r*3+1].h,info[r*3+2].h);
+    for(var c=0;c<3;c++){
+      var m=r*3+c,x0=pad+c*(colW+gx),y0=y,inf=info[m];
+      text(expCap(MESES[m]),x0,y0,30,'text',true);
+      ['L','M','M','J','V','S','D'].forEach(function(d,i){text(d,x0+i*(cell+gap)+cell/2,y0+42,17,'muted',true,'center')});
+      inf.cells.forEach(function(cl,i){if(cl.empty)return;var cx=x0+(i%7)*(cell+gap),cy=y0+70+Math.floor(i/7)*(ch+gap);ctx.fillStyle=expToken(cl.kind+'-bg');ctx.beginPath();ctx.roundRect(cx,cy,cell,ch,6);ctx.fill();if(cl.holiday){ctx.strokeStyle=expToken('holiday');ctx.lineWidth=3;ctx.stroke()}text(String(cl.day),cx+cell/2,cy+ch/2-11,21,cl.kind+'-text',true,'center')});
+      var yy=y0+70+inf.weeks*(ch+gap)+8;
+      inf.hl.forEach(function(it){text(it.f,x0,yy,19,'holiday',true);it.ls.forEach(function(l,li){text(l,x0+34,yy+li*25,19,'text',false)});yy+=it.ls.length*25+6});
+    }
+    y+=rowH+rowGap;
+  }
+  if(!verified){y=wrap('Feriados no verificados para '+yr+'.',pad,y,21,'muted',W-pad*2)+10}
+  y+=6;y=wrap(EXP_NOTE,pad,y,19,'muted',W-pad*2);y+=24;text('by Dixon Cortés',pad,y,21,'text',true);y+=56;
+  return {canvas:cropCanvas(canvas,W,y,K),w:W,h:y,title:String(yr)};
+}
+
+function canvasBlob(c){return new Promise(function(res,rej){c.toBlob(function(b){b?res(b):rej(new Error('blob'))},'image/png')})}
+function pause(){return new Promise(function(r){setTimeout(r,0)})}
+function pdfAdd(pdf,pg,first){
+  var pw=pdf.internal.pageSize.getWidth(),ph=pdf.internal.pageSize.getHeight(),sc=Math.min((pw-20)/pg.w,(ph-20)/pg.h),dw=pg.w*sc,dh=pg.h*sc;
+  if(!first)pdf.addPage();
+  pdf.addImage(pg.canvas.toDataURL('image/jpeg',0.92),'JPEG',(pw-dw)/2,10,dw,dh,undefined,'FAST');
+}
+function newPdf(title){var PDF=window.jspdf&&window.jspdf.jsPDF;if(!PDF)throw new Error('PDF unavailable');var pdf=new PDF({orientation:'portrait',unit:'mm',format:'a4'});pdf.setProperties({title:title,author:'Dixon Cortés'});return pdf}
+
+async function expBuild(){
+  var s=expState,yr=st.y,mo=st.m,res={};
+  if(s.scope==='mes'){
+    var pg=drawMonth(yr,mo,2);
+    res.title='Calendario de turnos · '+pg.title;res.name='turnos-'+yr+'-'+String(mo+1).padStart(2,'0');res.preview=pg.canvas.toDataURL('image/png');
+    if(s.format==='png')res.blob=await canvasBlob(pg.canvas);
+    else{var pdf=newPdf(res.title);pdfAdd(pdf,pg,true);res.blob=pdf.output('blob')}
+  }else{
+    res.title='Calendario de turnos · '+yr;
+    if(s.format==='png'){var py=drawYear(yr,2);res.name='turnos-'+yr;res.preview=py.canvas.toDataURL('image/png');res.blob=await canvasBlob(py.canvas)}
+    else if(s.layout==='hoja'){var ph=drawYear(yr,2),pdf2=newPdf(res.title);res.name='turnos-'+yr;res.preview=ph.canvas.toDataURL('image/png');pdfAdd(pdf2,ph,true);res.blob=pdf2.output('blob')}
+    else{
+      var pdf3=newPdf(res.title);res.name='turnos-'+yr+'-12-paginas';
+      for(var m=0;m<12;m++){
+        $('export-message').textContent='Preparando página '+(m+1)+' de 12…';await pause();
+        var pm=drawMonth(yr,m,2);if(m===0)res.preview=pm.canvas.toDataURL('image/png');
+        pdfAdd(pdf3,pm,m===0);
+      }
+      res.blob=pdf3.output('blob');
+    }
+  }
+  return res;
+}
+function expKey(){var s=expState;return [s.scope,s.format,s.scope==='anio'&&s.format==='pdf'?s.layout:'-',st.y,s.scope==='mes'?st.m:'-'].join('|')}
+function expEls(){return {dl:$('export-download'),sh:$('export-share'),msg:$('export-message'),img:$('export-preview')}}
+function expControls(){
+  var s=expState;
+  document.querySelectorAll('input[name="export-scope"]').forEach(function(r){r.checked=r.value===s.scope});
+  document.querySelectorAll('input[name="export-format"]').forEach(function(r){r.checked=r.value===s.format});
+  document.querySelectorAll('input[name="export-layout"]').forEach(function(r){r.checked=r.value===s.layout});
+  $('export-year-label').textContent='Año '+st.y;
+  $('export-layout-row').hidden=!(s.scope==='anio'&&s.format==='pdf');
+  $('export-month').textContent=s.scope==='anio'?'Calendario '+st.y:expCap($('mt').textContent);
+  $('export-download').textContent=s.format==='pdf'?'Descargar PDF':'Descargar imagen';
+}
+function expBusy(msg){var e=expEls();e.dl.disabled=true;e.sh.hidden=true;e.msg.textContent=msg||''}
+function expShow(key){
+  var r=expCache[key],e=expEls();if(!r)return;
+  e.img.src=r.preview;e.dl.disabled=false;
+  var ext=expState.format==='pdf'?'pdf':'png',file=new File([r.blob],r.name+'.'+ext,{type:r.blob.type||(ext==='pdf'?'application/pdf':'image/png')});
+  var ok=!!(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]}));
+  e.sh.hidden=!ok;
+  e.msg.textContent=ok?(expState.layout==='paginas'&&expState.scope==='anio'&&expState.format==='pdf'?'Vista previa: enero. El PDF tiene 12 páginas.':''):'Este navegador no permite compartir archivos desde aquí. Toca Descargar y adjunta el archivo en WhatsApp u otra aplicación.';
+}
+function expFail(){expBusy('No se pudo preparar el archivo. Cierra esta ventana y vuelve a intentar.')}
+function expRun(){
+  expControls();var key=expKey(),seq=++expSeq;
+  if(expCache[key]){expShow(key);return}
+  expBusy('Preparando…');
+  setTimeout(function(){expBuild().then(function(r){if(seq!==expSeq)return;expCache[key]=r;expShow(key)}).catch(function(){if(seq===expSeq)expFail()})},30);
+}
+function openExport(format){expState.format=format;$('export-dialog').showModal();expRun()}
+$('export-close').onclick=function(){$('export-dialog').close()};
+$('export-dialog').addEventListener('close',function(){$('month-image').focus();expSeq++});
+$('month-image').onclick=function(){openExport('png')};
+$('month-pdf').onclick=function(){openExport('pdf')};
+document.querySelectorAll('input[name="export-scope"]').forEach(function(r){r.onchange=function(){expState.scope=r.value;expRun()}});
+document.querySelectorAll('input[name="export-format"]').forEach(function(r){r.onchange=function(){expState.format=r.value;expRun()}});
+document.querySelectorAll('input[name="export-layout"]').forEach(function(r){r.onchange=function(){expState.layout=r.value;expRun()}});
+$('export-download').onclick=function(){var r=expCache[expKey()];if(r)exportDownload(r.blob,r.name+'.'+(expState.format==='pdf'?'pdf':'png'))};
+$('export-share').onclick=function(){
+  var r=expCache[expKey()];if(!r)return;var ext=expState.format==='pdf'?'pdf':'png',file=new File([r.blob],r.name+'.'+ext,{type:r.blob.type||(ext==='pdf'?'application/pdf':'image/png')});
+  if(!navigator.share||!navigator.canShare||!navigator.canShare({files:[file]})){exportDownload(r.blob,r.name+'.'+ext);return}
+  navigator.share({files:[file],title:r.title}).catch(function(e){if(e.name!=='AbortError')$('export-message').textContent='No se pudo compartir. Toca Descargar y adjunta el archivo.'});
+};
+$('export-retry').onclick=function(){expRun()};
 
 if(!sv){$("dt").open=true}
 all();
