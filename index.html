@@ -223,7 +223,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 
 <dialog id="holiday-dialog" aria-labelledby="holiday-title"><button class="holiday-close" id="holiday-close" aria-label="Cerrar detalle del feriado">×</button><p class="holiday-date" id="holiday-date"></p><h2 id="holiday-title"></h2><p id="holiday-reason"></p><p class="hint">Este feriado no modifica tu turno ni el cálculo de tus vacaciones.</p><div class="holiday-actions"><button class="chip" id="holiday-start">Marcar como inicio de turno</button><button class="chip" id="holiday-done">Cerrar</button></div></dialog>
 <dialog id="export-dialog" aria-labelledby="export-month"><button class="holiday-close" id="export-close" aria-label="Cerrar vista para compartir">×</button><h2 id="export-month"></h2><p class="lbl" style="margin:0 0 6px">Qué compartir</p><div class="export-formats"><label><input type="radio" name="export-scope" value="mes" checked>Este mes</label><label><input type="radio" name="export-scope" value="anio"><span id="export-year-label">Año</span></label></div><p class="lbl" style="margin:0 0 6px">Formato</p><div class="export-formats"><label><input type="radio" name="export-format" value="png" checked>Imagen PNG</label><label><input type="radio" name="export-format" value="pdf">PDF</label></div><div id="export-layout-row" hidden><p class="lbl" style="margin:0 0 6px">Diseño del PDF del año</p><div class="export-formats"><label><input type="radio" name="export-layout" value="hoja" checked>Una hoja con los 12 meses</label><label><input type="radio" name="export-layout" value="paginas">12 páginas</label></div></div><img id="export-preview" alt="Vista previa del calendario con turnos, vacaciones y feriados"><div class="export-actions"><button class="export-button primary" id="export-download">Descargar imagen</button><button class="export-button" id="export-share">Compartir</button></div><p class="hint" id="export-message" role="status"></p></dialog>
-<footer>© 2026 Dixon Cortés. Derechos reservados.<br><a href="acerca.html">Acerca de</a> · <a href="privacidad.html">Privacidad</a></footer>
+<footer>© 2026 Dixon Cortés. Derechos reservados.<br><a href="acerca.html">Acerca de</a> · <a href="privacidad.html">Privacidad</a><span id="donate-wrap" hidden><br><a id="donate" href="#" target="_blank" rel="noopener noreferrer">☕ Apoyar esta app (donación voluntaria)</a></span></footer>
 <script>
 /** @license
  *
@@ -1019,6 +1019,14 @@ $('export-share').onclick=function(){
 };
 $('export-retry').onclick=function(){expRun()};
 
+// Donación voluntaria: pega aquí tu enlace de cobro (debe empezar con https://). Vacío = el botón queda oculto.
+var DONACION_URL="https://www.paypal.me/DixonCortes";
+(function(){
+  var a=$("donate"),w=$("donate-wrap");
+  if(!a||!w||!/^https:\/\//.test(DONACION_URL))return;
+  a.href=DONACION_URL;w.hidden=false;
+  a.addEventListener("click",function(){try{gtag("event","donacion_click")}catch(e){}});
+})();
 if(!sv){$("dt").open=true}
 all();
 setTimeout(function(){var s=$("sp");s.classList.add("out");setTimeout(function(){s.remove()},600)},1300);
