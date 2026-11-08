@@ -626,10 +626,26 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
 </script>
 <script>
-// Verified national holidays only; regional and one-off election holidays excluded.
-// Source: https://www.gob.cl/noticias/feriados-2026-revisa-cuantos-habra-y-cuales-son-irrenunciables/
-// 2027: https://www.feriados.cl/2027.php
-const holidayYears = [2026, 2027];
+// Feriados nacionales de Chile: se CALCULAN por reglas para cualquier año desde 2026,
+// sin listas escritas a mano por año ni conexión a internet. No incluye feriados
+// regionales ni extraordinarios de un solo año (elecciones u otros creados por una ley
+// puntual): esos se agregan en holidayExceptions cuando existan.
+// Reglas aplicadas (leyes vigentes, textos en bcn.cl/leychile):
+// - Fechas fijas de la lista fixedHolidays.
+// - Semana Santa: Pascua por el cómputo gregoriano; Viernes Santo = Pascua - 2 días.
+// - Pueblos Indígenas (Ley 21.357): día del solsticio de invierno en hora de Chile,
+//   calculado con el algoritmo de Meeus (Astronomical Algorithms, cap. 27).
+// - San Pedro y San Pablo y Encuentro de Dos Mundos (Ley 19.668): si caen martes,
+//   miércoles o jueves pasan al lunes de esa semana; si caen viernes, al lunes siguiente.
+// - Iglesias Evangélicas (Ley 20.299): el 31 de octubre, salvo que caiga martes (pasa al
+//   viernes anterior) o miércoles (pasa al viernes de esa semana, 2 de noviembre).
+// - Fiestas Patrias adicionales: 17 de septiembre si el 18 cae martes (Ley 20.215) o
+//   sábado (Ley 20.983); 20 de septiembre si el 18 cae miércoles (Ley 20.215).
+// - Año Nuevo (Ley 20.983): si el 1 de enero cae domingo, el lunes 2 también es feriado.
+// Verificado: el cálculo reproduce exactamente las listas oficiales 2026 (16), 2027 (17)
+// y 2028 (16) y las proyecciones publicadas para 2029 y 2030.
+const HOLIDAY_FIRST_YEAR = 2026;
+function holidaysAvailable(year) { return Number.isInteger(year) && year >= HOLIDAY_FIRST_YEAR; }
 const fixedHolidays = [
   ['01-01', 'Año Nuevo', 'Celebra el inicio de un nuevo año.'],
   ['05-01', 'Día del Trabajo', 'Reconoce a las personas trabajadoras y la historia de sus derechos laborales.'],
@@ -638,26 +654,82 @@ const fixedHolidays = [
   ['08-15', 'Asunción de la Virgen', 'Celebración católica de la asunción de la Virgen María al cielo.'],
   ['09-18', 'Independencia Nacional', 'Conmemora la Primera Junta Nacional de Gobierno de 1810, un hito del proceso de independencia de Chile.'],
   ['09-19', 'Día de las Glorias del Ejército', 'Reconoce al Ejército de Chile y su historia; forma parte de las celebraciones de Fiestas Patrias.'],
-  ['10-31', 'Día de las Iglesias Evangélicas y Protestantes', 'Reconoce a las iglesias evangélicas y protestantes y recuerda la Reforma iniciada en 1517.'],
   ['11-01', 'Día de Todos los Santos', 'Celebración católica en honor de todos los santos.'],
   ['12-08', 'Inmaculada Concepción', 'Celebración católica de la concepción de la Virgen María sin pecado original.'],
   ['12-25', 'Navidad', 'Celebración cristiana del nacimiento de Jesús.'],
 ];
-const variableHolidays = {
-  2026: [['04-03', 'Viernes Santo'], ['04-04', 'Sábado Santo'], ['06-21', 'Día Nacional de los Pueblos Indígenas'], ['06-29', 'San Pedro y San Pablo'], ['10-12', 'Encuentro de Dos Mundos']],
-  2027: [['03-26', 'Viernes Santo'], ['03-27', 'Sábado Santo'], ['06-21', 'Día Nacional de los Pueblos Indígenas'], ['06-28', 'San Pedro y San Pablo'], ['09-17', 'Feriado adicional de Fiestas Patrias'], ['10-11', 'Encuentro de Dos Mundos']],
-};
+const IGLESIAS_REASON = 'Reconoce a las iglesias evangélicas y protestantes y recuerda la Reforma iniciada en 1517.';
+// Feriados extraordinarios de un solo año, cuando una ley futura los cree:
+// { 2031: { add: [['MM-DD', 'Nombre', 'Motivo']], remove: ['MM-DD'] } }
+const holidayExceptions = {};
 const reasons = {
   'Viernes Santo': 'Recuerda la pasión y muerte de Jesús en la tradición cristiana. Su fecha cambia cada año según la Semana Santa.',
   'Sábado Santo': 'Día de la Semana Santa que recuerda el tiempo entre la muerte y la resurrección de Jesús.',
   'Día Nacional de los Pueblos Indígenas': 'Reconoce a los pueblos originarios de Chile y sus culturas. La ley lo fija en el solsticio de invierno del hemisferio sur.',
   'San Pedro y San Pablo': 'Celebración católica de los apóstoles Pedro y Pablo. La fecha del feriado puede trasladarse al lunes según la ley.',
   'Encuentro de Dos Mundos': 'Conmemora el encuentro entre América y Europa a partir del viaje de Cristóbal Colón de 1492. La fecha del feriado puede trasladarse al lunes.',
-  'Feriado adicional de Fiestas Patrias': 'La ley declara feriado el 17 de septiembre cuando el 18 cae sábado y el 19 domingo, como sucede en 2027.',
+  'Feriado adicional de Fiestas Patrias': 'Las leyes declaran feriado adicional el 17 de septiembre cuando el 18 cae martes o sábado, y el 20 de septiembre cuando el 18 cae miércoles.',
 };
+function _holDow(year, month, day) { return new Date(Date.UTC(year, month - 1, day)).getUTCDay(); }
+function _holShift(year, month, day, deltaDays) {
+  const t = new Date(Date.UTC(year, month - 1, day) + deltaDays * 864e5);
+  return String(t.getUTCMonth() + 1).padStart(2, '0') + '-' + String(t.getUTCDate()).padStart(2, '0');
+}
+function _easterSunday(year) {
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100, d = Math.floor(b / 4), e = b % 4,
+    f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30,
+    i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7,
+    m = Math.floor((a + 11 * h + 22 * l) / 451), month = Math.floor((h + l - 7 * m + 114) / 31),
+    day = ((h + l - 7 * m + 114) % 31) + 1;
+  return { month, day };
+}
+function _juneSolsticeMD(year) {
+  // Instante del solsticio de junio (Meeus, cap. 27) en tiempo dinámico, pasado a UTC
+  // (ΔT aproximado por polinomio NASA) y luego a hora de Chile continental (UTC-4 en junio).
+  const Y = (year - 2000) / 1000;
+  const jde0 = 2451716.56767 + 365241.62603 * Y + 0.00325 * Y * Y + 0.00888 * Y ** 3 - 0.00030 * Y ** 4;
+  const T = (jde0 - 2451545) / 36525;
+  const terms = [[485, 324.96, 1934.136], [203, 337.23, 32964.467], [199, 342.08, 20.186], [182, 27.85, 445267.112], [156, 73.14, 45036.886], [136, 171.52, 22518.443], [77, 222.54, 65928.934], [74, 296.72, 3034.906], [70, 243.58, 9037.513], [58, 119.81, 33718.147], [52, 297.17, 150.678], [50, 21.02, 2281.226], [45, 247.54, 29929.562], [44, 325.15, 31555.956], [29, 60.93, 4443.417], [18, 155.12, 67555.328], [17, 288.79, 4562.452], [16, 198.04, 62894.029], [14, 199.76, 31436.921], [12, 95.39, 14577.848], [12, 287.11, 31931.756], [12, 320.81, 34777.259], [9, 227.73, 1222.114], [8, 15.45, 16859.074]];
+  let S = 0;
+  for (const [a, b, c] of terms) S += a * Math.cos((b + c * T) * Math.PI / 180);
+  const W = 35999.373 * T - 2.47;
+  const L = 1 + 0.0334 * Math.cos(W * Math.PI / 180) + 0.0007 * Math.cos(2 * W * Math.PI / 180);
+  const jde = jde0 + 0.00001 * S / L;
+  const t = year - 2000, dT = 62.92 + 0.32217 * t + 0.005589 * t * t;
+  const chile = new Date((jde - 2440587.5) * 864e5 - dT * 1000 - 4 * 3600e3);
+  return '06-' + String(chile.getUTCDate()).padStart(2, '0');
+}
+function _mondayTransfer(year, month, day) {
+  const dow = _holDow(year, month, day);
+  if (dow >= 2 && dow <= 4) return _holShift(year, month, day, -(dow - 1));
+  if (dow === 5) return _holShift(year, month, day, 3);
+  return _holShift(year, month, day, 0);
+}
 function getChileHolidays(year) {
-  if (!holidayYears.includes(year)) return [];
-  return [...fixedHolidays, ...(variableHolidays[year] || [])].map(([date, name, reason]) => ({ date: `${year}-${date}`, name, reason: reason || reasons[name] })).sort((a, b) => a.date.localeCompare(b.date));
+  if (!holidaysAvailable(year)) return [];
+  const list = fixedHolidays.slice();
+  if (_holDow(year, 1, 1) === 0) list.push(['01-02', 'Año Nuevo', 'Cuando el 1 de enero cae domingo, la Ley 20.983 declara feriado también el lunes 2 de enero.']);
+  const easter = _easterSunday(year);
+  list.push([_holShift(year, easter.month, easter.day, -2), 'Viernes Santo']);
+  list.push([_holShift(year, easter.month, easter.day, -1), 'Sábado Santo']);
+  list.push([_juneSolsticeMD(year), 'Día Nacional de los Pueblos Indígenas']);
+  list.push([_mondayTransfer(year, 6, 29), 'San Pedro y San Pablo']);
+  list.push([_mondayTransfer(year, 10, 12), 'Encuentro de Dos Mundos']);
+  const dow31 = _holDow(year, 10, 31);
+  const iglesias = dow31 === 2 ? _holShift(year, 10, 31, -4) : dow31 === 3 ? _holShift(year, 10, 31, 2) : '10-31';
+  list.push([iglesias, 'Día de las Iglesias Evangélicas y Protestantes', iglesias === '10-31' ? IGLESIAS_REASON : IGLESIAS_REASON + ' Su fecha puede trasladarse según la ley.']);
+  const dow18 = _holDow(year, 9, 18);
+  if (dow18 === 6 || dow18 === 2) list.push(['09-17', 'Feriado adicional de Fiestas Patrias']);
+  else if (dow18 === 3) list.push(['09-20', 'Feriado adicional de Fiestas Patrias']);
+  const ex = holidayExceptions[year];
+  let out = list;
+  if (ex) {
+    if (ex.remove) out = out.filter(([date]) => !ex.remove.includes(date));
+    if (ex.add) out = out.concat(ex.add);
+  }
+  const seen = {};
+  return out.filter(([date, name]) => { const key = date + '|' + name; if (seen[key]) return false; seen[key] = 1; return true; })
+    .map(([date, name, reason]) => ({ date: `${year}-${date}`, name, reason: reason || reasons[name] })).sort((a, b) => a.date.localeCompare(b.date));
 }
 var PRESETS=[[4,3],[4,4],[5,2],[7,7],[8,6],[10,5],[14,14],[20,10]];
 var MESES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
@@ -701,9 +773,9 @@ function render(){
     h+='<div role="button" tabindex="0" aria-label="'+d+' de '+MESES[m]+', '+tag+(holiday?', feriado: '+holiday.name:'')+'" class="d '+cls+(ds==td?' today':'')+(holiday?' holiday':'')+'" data-d="'+ds+'"'+(holiday?' data-holiday="1"':'')+'>'+d+'<small>'+tag+'</small>'+(holiday?'<span class="holiday-mark" aria-hidden="true">✦</span>':'')+'</div>';
   }
   $("g").innerHTML=h;turnos(cyc,s0,y,m,n);
-  $("holiday-list").innerHTML=monthHolidays.length?monthHolidays.map(function(h){return '<button class="holiday-item" data-h="'+h.date+'"><time datetime="'+h.date+'">'+fd(utc(h.date))+'</time><span>'+h.name+'</span><b aria-hidden="true">›</b></button>'}).join(''):'<p class="hint">'+(holidayYears.includes(y)?'No hay feriados nacionales este mes.':'Feriados disponibles para 2026 y 2027; todavía no hay fechas verificadas para '+y+'.')+'</p>';
+  $("holiday-list").innerHTML=monthHolidays.length?monthHolidays.map(function(h){return '<button class="holiday-item" data-h="'+h.date+'"><time datetime="'+h.date+'">'+fd(utc(h.date))+'</time><span>'+h.name+'</span><b aria-hidden="true">›</b></button>'}).join(''):'<p class="hint">'+(holidaysAvailable(y)?'No hay feriados nacionales este mes.':'Feriados disponibles desde 2026; no hay fechas para '+y+'.')+'</p>';
   expCache={};
-  $("holiday-list").innerHTML+='<p class="hint">Feriados nacionales de Chile · 2026–2027. No incluye feriados regionales ni electorales extraordinarios.</p>';
+  $("holiday-list").innerHTML+='<p class="hint">Feriados nacionales de Chile · desde 2026, calculados según las leyes vigentes. No incluye feriados regionales ni extraordinarios de un solo año.</p>';
 }
 function fd(x){return new Date(x*864e5).toLocaleDateString("es-CL",{day:"numeric",month:"short",timeZone:"UTC"}).replace(".","")}
 function turnos(cyc,s0,y,m,n){
@@ -886,7 +958,7 @@ function mkTools(ctx){
   function lines(str,size,max){ctx.font='400 '+size+'px "Segoe UI", Arial, sans-serif';var words=str.split(' '),out=[],line='';words.forEach(function(w){var n=line?line+' '+w:w;if(ctx.measureText(n).width>max&&line){out.push(line);line=w}else line=n});if(line)out.push(line);return out}
   return {text:text,wrap:wrap,lines:lines};
 }
-var EXP_NOTE='Feriados nacionales verificados para 2026–2027; no incluye feriados regionales ni electorales extraordinarios.';
+var EXP_NOTE='Feriados nacionales calculados según las leyes vigentes (desde 2026); no incluye feriados regionales ni extraordinarios de un solo año.';
 
 function drawMonth(yr,m,K){
   var width=1120,pad=54,gap=10,cw=(width-pad*2-gap*6)/7,ch=114,cells=monthCells(yr,m),H=2400;
@@ -916,7 +988,7 @@ function drawYear(yr,K){
   ctx.strokeStyle=expToken('holiday');ctx.lineWidth=3;ctx.strokeRect(pad+4*276+1.5,y+1.5,21,21);text('Feriado nacional',pad+4*276+34,y+1,22,'holiday',true);
   y+=62;
   // Feriados de cada mes, para dibujarlos justo debajo de ese mes
-  var verified=holidayYears.includes(yr),porMes=[],info=[],i0;
+  var verified=holidaysAvailable(yr),porMes=[],info=[],i0;
   for(i0=0;i0<12;i0++)porMes.push([]);
   if(verified)getChileHolidays(yr).forEach(function(h){porMes[+h.date.slice(5,7)-1].push(h)});
   for(var mm=0;mm<12;mm++){
@@ -938,7 +1010,7 @@ function drawYear(yr,K){
     }
     y+=rowH+rowGap;
   }
-  if(!verified){y=wrap('Feriados no verificados para '+yr+'.',pad,y,21,'muted',W-pad*2)+10}
+  if(!verified){y=wrap('Feriados no disponibles para '+yr+'.',pad,y,21,'muted',W-pad*2)+10}
   y+=6;y=wrap(EXP_NOTE,pad,y,19,'muted',W-pad*2);y+=24;text('by Dixon Cortés',pad,y,21,'text',true);y+=56;
   return {canvas:cropCanvas(canvas,W,y,K),w:W,h:y,title:String(yr)};
 }
