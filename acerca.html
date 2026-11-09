@@ -31,6 +31,7 @@ h1{font-size:20px;margin:4px 0 2px}
 .card button{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;width:100%}
 .card .nota{font-size:12px;color:var(--mut);margin:10px 0 0}
 #gracias p{color:var(--ac);font-weight:600}
+#error-envio{color:#b3261e;font-size:13px;font-weight:600}
 footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;padding-top:12px;border-top:1px solid var(--bd)}
 </style>
 </head>
@@ -68,7 +69,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 <div class="card">
 <h2>Contacto</h2>
 <p>¿Tienes una sugerencia o encontraste un problema? Déjame tu comentario y me llega directo al correo.</p>
-<form action="https://formsubmit.co/DixonCortes@outlook.cl" method="POST">
+<form id="form-contacto" action="https://formsubmit.co/DixonCortes@outlook.cl" method="POST">
 <input type="hidden" name="_subject" value="Comentario desde Calendario de turnos">
 <input type="hidden" name="_template" value="table">
 <input type="hidden" name="_next" value="https://calendarioturnos.github.io/Calendario/acerca.html?enviado=1">
@@ -84,11 +85,32 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 </label>
 <button type="submit">Enviar comentario</button>
 <p class="nota">Al enviar, tu mensaje viaja a través del servicio FormSubmit hasta mi correo. Solo se usa para leerlo y responderte.</p>
+<p id="error-envio" hidden>No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.</p>
 </form>
 <div id="gracias" hidden>
 <p>¡Gracias! Tu comentario fue enviado.</p>
 </div>
-<script>if(new URLSearchParams(location.search).has("enviado")){var g=document.getElementById("gracias");if(g){g.hidden=false;g.scrollIntoView({block:"center"})}}</script>
+<script>
+if(new URLSearchParams(location.search).has("enviado")){var g0=document.getElementById("gracias");if(g0){g0.hidden=false;g0.scrollIntoView({block:"center"})}}
+var fc=document.getElementById("form-contacto");
+if(fc&&window.fetch){
+  fc.addEventListener("submit",function(ev){
+    ev.preventDefault();
+    var btn=fc.querySelector("button[type=submit]");
+    var err=document.getElementById("error-envio");
+    var gr=document.getElementById("gracias");
+    if(err)err.hidden=true;
+    if(btn){btn.disabled=true;btn.textContent="Enviando..."}
+    var data={_subject:"Comentario desde Calendario de turnos",_template:"table",_captcha:"false"};
+    new FormData(fc).forEach(function(v,k){if(k!=="_honey"&&k!=="_next"&&k!=="_subject"&&k!=="_template")data[k]=v});
+    fetch("https://formsubmit.co/ajax/DixonCortes@outlook.cl",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(data)})
+    .then(function(r){if(!r.ok)throw new Error("http "+r.status);return r.json()})
+    .then(function(){fc.reset();if(gr){gr.hidden=false;gr.scrollIntoView({block:"center"})}})
+    .catch(function(){if(err)err.hidden=false})
+    .finally(function(){if(btn){btn.disabled=false;btn.textContent="Enviar comentario"}});
+  });
+}
+</script>
 </div>
 
 <footer>© 2026 Derechos reservados.<br>by Dixon Cortés</footer>
