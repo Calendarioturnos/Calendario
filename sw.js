@@ -9,7 +9,7 @@
  * Las descargas usan {cache:'reload'} para no traer una copia vieja
  * del caché HTTP del navegador.
  */
-var CACHE_NAME = 'turnos-v3';
+var CACHE_NAME = 'turnos-v4';
 var ASSETS = [
   './',
   'index.html',
@@ -51,13 +51,23 @@ self.addEventListener('fetch', function (event) {
   if (event.request.method !== 'GET') return;
   var url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return; // solo archivos propios
+  // El archivo de versión nunca se cachea: siempre se lee fresco de la red,
+  // o el aviso de actualización mostraría una versión vieja.
+  if (url.pathname.endsWith('apk-version.json')) {
+    event.respondWith(fetch(event.request, { cache: 'reload' }));
+    return;
+  }
+  // Clave sin query: la página se abre como /Calendario/ y como
+  // /Calendario/?v=4, y si se guardan como claves distintas la copia
+  // vieja queda pegada para siempre. Una sola entrada por archivo.
+  var cacheKey = url.origin + url.pathname;
   event.respondWith(
-    caches.match(event.request, { ignoreSearch: true }).then(function (cached) {
+    caches.match(cacheKey).then(function (cached) {
       var network = fetch(event.request, { cache: 'reload' }).then(function (response) {
         if (response && response.ok) {
           var copy = response.clone();
           caches.open(CACHE_NAME).then(function (cache) {
-            cache.put(event.request, copy);
+            cache.put(cacheKey, copy);
           });
         }
         return response;
