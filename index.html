@@ -95,6 +95,20 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 .aviso[hidden]{display:none}
 .th{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));right:14px;width:38px;height:38px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;font-size:17px;cursor:pointer}
 .sub{padding-right:46px}
+.topbar{display:flex;align-items:center;gap:10px}
+.topbar h1{flex:1;margin:0}
+#homeBtn{border:0;background:none;padding:0;cursor:pointer;flex:none;line-height:0}
+#homeBtn img{width:38px;height:38px;border-radius:10px;display:block}
+.menu{display:flex;gap:6px;margin:12px 0}
+.menu button{flex:1;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:9px 0;font-size:14px;font-weight:600;cursor:pointer}
+.menu button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.panel[hidden]{display:none}
+.psum{color:var(--mut);font-size:12px;margin:0 0 10px}
+.upd{background:var(--card);border:2px solid var(--ac);border-radius:12px;padding:12px;margin-bottom:12px}
+.upd b{font-size:15px}
+.upd ul{margin:8px 0 12px 18px;font-size:14px;line-height:1.5}
+.upd .row2{display:flex;gap:8px}
+.upd .row2 button{flex:1}
 .aviso button{background:none;border:0;color:inherit;font-size:22px;line-height:1;cursor:pointer;padding:0 4px}
 #sp{position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:linear-gradient(#d66422,#963e10);color:#fff;text-align:center;transition:opacity .5s}
 #sp.out{opacity:0;pointer-events:none}
@@ -102,8 +116,10 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 @keyframes spx{to{opacity:0;visibility:hidden}}
 #sp h2{margin:14px 0 0;font-size:28px}
 #sp p{margin:0;color:#ffecd6;font-size:15px}
-#sp small{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom,0px));font-size:12px;color:#ffecd6;line-height:1.6}
-#sp small b{color:#fff;font-size:13px}
+#sp small{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom,0px));font-size:15px;color:#ffecd6;line-height:1.6}
+#sp img{width:150px;height:150px}
+#sp .sp-ver{margin-top:12px;font-size:14px}
+#sp small b{color:#fff;font-size:22px}
 .sb{width:140px;height:6px;border-radius:6px;background:#fff;overflow:hidden;margin-top:12px}
 .sb i{display:block;height:100%;width:0;background:#f2b33d;animation:ld 1.2s ease forwards}
 @keyframes ld{to{width:100%}}
@@ -134,6 +150,10 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 .export-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)}
 .export-button{display:inline-flex;gap:7px;align-items:center;justify-content:center;font:inherit;font-size:14px;padding:10px 14px;min-height:44px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);cursor:pointer}
 .export-button svg{width:18px;height:18px;flex-shrink:0}
+.export-tools .export-button{flex:1 1 160px;min-width:0;white-space:nowrap;font-size:13px;padding:10px 12px}
+.export-tools .export-button svg{width:22px;height:22px;stroke-width:2.5}
+#month-image svg{color:var(--ac)}
+#month-pdf svg{color:var(--holiday)}
 .export-button:disabled{opacity:.5;cursor:wait}
 #export-dialog{width:calc(100% - 24px);max-width:520px;max-height:90dvh;overflow:auto;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:12px;padding:18px}
 #export-dialog::backdrop{background:var(--overlay)}
@@ -148,33 +168,49 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 </style>
 </head>
 <body>
-<div id="sp"><svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true"><rect x="10" y="18" width="130" height="122" rx="16" fill="#fff"/><rect x="10" y="18" width="130" height="34" rx="16" fill="#4a3300"/><rect x="10" y="34" width="130" height="18" fill="#4a3300"/><rect x="42" y="8" width="9" height="24" rx="4" fill="#f2b33d"/><rect x="99" y="8" width="9" height="24" rx="4" fill="#f2b33d"/><g fill="#f2b33d"><rect x="26" y="64" width="20" height="18" rx="4"/><rect x="52" y="64" width="20" height="18" rx="4"/><rect x="78" y="64" width="20" height="18" rx="4"/><rect x="104" y="64" width="20" height="18" rx="4"/><rect x="26" y="88" width="20" height="18" rx="4"/><rect x="52" y="88" width="20" height="18" rx="4"/><rect x="78" y="88" width="20" height="18" rx="4"/></g><g fill="#cfe8d5"><rect x="104" y="88" width="20" height="18" rx="4"/><rect x="26" y="112" width="20" height="18" rx="4"/><rect x="52" y="112" width="20" height="18" rx="4"/><rect x="78" y="112" width="20" height="18" rx="4"/><rect x="104" y="112" width="20" height="18" rx="4"/></g></svg><h2>Calendario de turnos</h2><p>Tu turno, siempre a la mano</p><div class="sb"><i></i></div><small>© 2026 Derechos reservados.<br><b>by Dixon Cortés</b></small></div>
+<div id="sp"><img src="icon-512.png" alt="" width="150" height="150"><h2>Calendario de turnos</h2><p>Tu turno, siempre a la mano</p><div class="sb"><i></i></div><p class="sp-ver" id="sp-ver">Versión 1.2</p><small>Hecho por<br><b>Dixon Cortés</b><br>© 2026</small></div>
 <button id="th" class="th" aria-label="Cambiar tema claro u oscuro">🌙</button>
-<h1>⛏️ Calendario de turnos</h1>
+<div class="topbar"><button id="homeBtn" aria-label="Volver a la pantalla inicial"><img src="icon-512.png" alt=""></button><h1>Calendario de turnos ⛏️</h1></div>
 <p class="sub">Elige tu régimen, el tipo de turno y tu primer día de turno.</p>
 <div class="aviso" id="av" hidden></div>
+<div class="menu" id="menu">
+  <button data-panel="turno" type="button">Turno</button>
+  <button data-panel="regimen" type="button">Régimen</button>
+  <button data-panel="vacaciones" type="button">Vacaciones</button>
+  <button data-panel="ayuda" type="button">Ayuda</button>
+</div>
+<div class="card upd" id="upd" hidden>
+  <b id="upd-title"></b>
+  <ul id="upd-list"></ul>
+  <div class="row2"><button class="chip on" id="upd-dl" type="button">Descargar actualización</button><button class="chip" id="upd-no" type="button">Ahora no</button></div>
+</div>
 
 <div class="card">
   <p class="lbl">Resumen de hoy</p>
   <div id="tl"></div>
 </div>
 
-<details class="card" id="dt"><summary><span>Turno y régimen</span><small id="sm1"></small></summary>
+<div class="card panel" id="panel-regimen" hidden>
   <p class="lbl">Régimen (días trabajo × días descanso)</p>
   <div class="chips" id="presets"></div>
   <div class="row">
     <label>Días trabajo<input type="number" id="w" min="1" max="30"></label>
     <label>Días descanso<input type="number" id="r" min="1" max="30"></label>
   </div>
-  <p class="lbl" style="margin-top:12px">Tipo de turno</p>
+  <p class="psum"><small id="sm1"></small></p>
+</div>
+
+<div class="card panel" id="panel-turno" hidden>
+  <p class="lbl">Tipo de turno</p>
   <div class="chips" id="types"></div>
   <div class="row">
     <label>Primer día de turno (subes la tarde anterior)<input type="date" id="s"></label>
   </div>
   <p class="hint">También puedes tocar un día del calendario para marcarlo como inicio de turno.</p>
-</details>
+</div>
 
-<details class="card" id="dv"><summary><span>Vacaciones</span><small id="sm2"></small></summary>
+<div class="card panel" id="panel-vacaciones" hidden>
+  <p class="psum"><small id="sm2"></small></p>
   <div class="chips" id="vt"></div>
   <div id="vbox" style="display:none">
     <div class="row">
@@ -209,7 +245,17 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
       <div id="sug-resultados" style="margin-top:14px"></div>
     </div>
   </div>
-</details>
+</div>
+
+<div class="card panel" id="panel-ayuda" hidden>
+  <p class="lbl">Ayuda</p>
+  <p>• Toca Turno, Régimen o Vacaciones para ver sus opciones.</p>
+  <p>• Toca de nuevo el mismo menú, o el icono de la app, para volver a la pantalla inicial.</p>
+  <p>• Turno: tipo de turno y primer día de turno.</p>
+  <p>• Régimen: días de trabajo y de descanso.</p>
+  <p>• Vacaciones: agrega tus días de vacaciones.</p>
+  <p>• También puedes tocar un día del calendario para marcarlo como inicio de turno.</p>
+</div>
 
 <div class="card">
   <div class="nav"><button id="pv" aria-label="Mes anterior">‹</button><b id="mt"></b><button id="hy" class="hy">Hoy</button><button id="nx" aria-label="Mes siguiente">›</button></div>
@@ -1099,7 +1145,38 @@ var DONACION_URL="https://www.paypal.me/DixonCortes";
   a.href=DONACION_URL;w.hidden=false;
   a.addEventListener("click",function(){try{gtag("event","donacion_click")}catch(e){}});
 })();
-if(!sv){$("dt").open=true}
+// Menú superior: Turno / Régimen / Vacaciones / Ayuda
+(function(){
+  var panels={turno:"panel-turno",regimen:"panel-regimen",vacaciones:"panel-vacaciones",ayuda:"panel-ayuda"};
+  var menu=$("menu");
+  function closeAll(){for(var k in panels){var p=$(panels[k]);if(p)p.hidden=true}menu.querySelectorAll("button").forEach(function(b){b.classList.remove("on")})}
+  function openPanel(k){var p=$(panels[k]);if(!p)return;var was=p.hidden;closeAll();if(was){p.hidden=false;var b=menu.querySelector('[data-panel="'+k+'"]');if(b)b.classList.add("on")}}
+  window.__openPanel=openPanel;window.__closeMenu=closeAll;
+  menu.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;openPanel(b.dataset.panel)});
+  var hb=$("homeBtn");if(hb)hb.addEventListener("click",closeAll);
+  if(!sv){openPanel("regimen")}
+})();
+// Aviso de actualización del APK (solo dentro de la app instalada)
+(function(){
+  try{
+    var standalone=window.matchMedia&&matchMedia("(display-mode: standalone)").matches;
+    var webview=/;\s*wv\)/.test(navigator.userAgent||"");
+    var params=new URLSearchParams(location.search);
+    if(!standalone&&!params.get("v")&&!webview)return;
+    var installed=params.get("v")?+params.get("v"):0;
+    var dismissed=+(localStorage.getItem("apkDismissed")||0);
+    fetch("apk-version.json?t="+Date.now()).then(function(r){return r.json()}).then(function(j){
+      var sv2=$("sp-ver");if(sv2&&j&&j.version)sv2.textContent="Versión "+j.version;
+      if(!j||!j.versionCode||j.versionCode<=installed||j.versionCode<=dismissed)return;
+      $("upd-title").textContent="Hay una nueva versión ("+j.version+")";
+      var ul=$("upd-list");ul.innerHTML="";
+      (j.novedades||[]).forEach(function(n){var li=document.createElement("li");li.textContent=n;ul.appendChild(li)});
+      $("upd").hidden=false;
+      $("upd-dl").onclick=function(){location.href=j.apkUrl||"https://github.com/Calendarioturnos/Calendario/releases/latest/download/Turnos.apk"};
+      $("upd-no").onclick=function(){try{localStorage.setItem("apkDismissed",String(j.versionCode))}catch(e){}$("upd").hidden=true};
+    }).catch(function(){});
+  }catch(e){}
+})();
 all();
 setTimeout(function(){var s=$("sp");s.classList.add("out");setTimeout(function(){s.remove()},600)},1300);
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
@@ -1341,7 +1418,7 @@ if("serviceWorker" in navigator){window.addEventListener("load",function(){navig
       var vbox = document.getElementById("vbox");
       if(vbox) vbox.style.display = "block";
       var dv = document.getElementById("dv");
-      if(dv) dv.open = true;
+      if(window.__openPanel)__openPanel("vacaciones");
     } catch(e){}
 
     var el = document.getElementById("sug-resultados");
