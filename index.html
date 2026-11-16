@@ -1165,9 +1165,17 @@ var DONACION_URL="https://www.paypal.me/DixonCortes";
     if(!standalone&&!params.get("v")&&!webview)return;
     var installed=params.get("v")?+params.get("v"):0;
     var dismissed=+(localStorage.getItem("apkDismissed")||0);
+    // La versión que se muestra es la INSTALADA, no la última disponible:
+    // sin ?v=, la híbrida 1.1 es la 1.1 y la TWA es la 1.0.
+    var code=installed;
+    if(!code){code=webview?3:(standalone?2:0)}
+    var NAMES={2:"1.0",3:"1.1",4:"1.2",5:"1.3"};
+    var shown=NAMES[code];
+    if(shown){
+      var sv2=$("sp-ver");if(sv2)sv2.textContent="Versión "+shown;
+      var fv=$("ft-ver");if(fv)fv.textContent="Versión "+shown;
+    }
     fetch("apk-version.json?t="+Date.now()).then(function(r){return r.json()}).then(function(j){
-      var sv2=$("sp-ver");if(sv2&&j&&j.version)sv2.textContent="Versión "+j.version;
-      var fv=$("ft-ver");if(fv&&j&&j.version)fv.textContent="Versión "+j.version;
       if(!j||!j.versionCode||j.versionCode<=installed||j.versionCode<=dismissed)return;
       $("upd-title").textContent="Hay una nueva versión ("+j.version+")";
       var ul=$("upd-list");ul.innerHTML="";
