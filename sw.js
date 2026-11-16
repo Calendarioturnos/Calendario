@@ -9,7 +9,7 @@
  * Las descargas usan {cache:'reload'} para no traer una copia vieja
  * del caché HTTP del navegador.
  */
-var CACHE_NAME = 'turnos-v4';
+var CACHE_NAME = 'turnos-v5';
 var ASSETS = [
   './',
   'index.html',
@@ -57,29 +57,30 @@ self.addEventListener('fetch', function (event) {
     event.respondWith(fetch(event.request, { cache: 'reload' }));
     return;
   }
+  // Con internet, siempre la versión en vivo; sin internet, la copia
+  // guardada. La copia solo es respaldo, nunca se muestra si hay red.
   // Clave sin query: la página se abre como /Calendario/ y como
   // /Calendario/?v=4, y si se guardan como claves distintas la copia
   // vieja queda pegada para siempre. Una sola entrada por archivo.
   var cacheKey = url.origin + url.pathname;
   event.respondWith(
-    caches.match(cacheKey).then(function (cached) {
-      var network = fetch(event.request, { cache: 'reload' }).then(function (response) {
-        if (response && response.ok) {
-          var copy = response.clone();
-          caches.open(CACHE_NAME).then(function (cache) {
-            cache.put(cacheKey, copy);
-          });
-        }
+    fetch(event.request, { cache: 'reload' }).then(function (response) {
+      if (response && response.ok) {
+        var copy = response.clone();
+        caches.open(CACHE_NAME).then(function (cache) {
+          cache.put(cacheKey, copy);
+        });
         return response;
-      }).catch(function () {
-        // Sin red: si es una navegación, sirve la portada cacheada.
-        if (event.request.mode === 'navigate') {
-          return caches.match('index.html');
-        }
-        return cached;
+      }
+      return caches.match(cacheKey).then(function (cached) {
+        return cached || response;
       });
-      // Cache primero para abrir rápido sin conexión; la red actualiza en segundo plano.
-      return cached || network;
+    }).catch(function () {
+      // Sin red: sirve la copia guardada; si no hay, la portada.
+      return caches.match(cacheKey).then(function (cached) {
+        if (cached) return cached;
+        if (event.request.mode === 'navigate') return caches.match('index.html');
+      });
     })
   );
 });
