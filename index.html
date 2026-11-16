@@ -146,7 +146,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 .holiday-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
 .d:focus-visible,.holiday-item:focus-visible{outline:3px solid var(--tx);outline-offset:2px}
 
-:root{--export-bg:#fff;--export-text:#1d1d1b;--export-muted:#65655f;--export-border:#ddd9cf;--export-holiday:#b32142;--export-W-bg:#f2b33d;--export-W-text:#4a3300;--export-N-bg:#4b57b8;--export-N-text:#fff;--export-R-bg:#cfe8d5;--export-R-text:#17432a;--export-V-bg:#d7a3d1;--export-V-text:#3d1239}
+:root{--export-bg:#fff;--export-text:#1d1d1b;--export-muted:#65655f;--export-mark:#aaa7a1;--export-border:#ddd9cf;--export-holiday:#b32142;--export-W-bg:#f2b33d;--export-W-text:#4a3300;--export-N-bg:#4b57b8;--export-N-text:#fff;--export-R-bg:#cfe8d5;--export-R-text:#17432a;--export-V-bg:#d7a3d1;--export-V-text:#3d1239}
 .export-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)}
 .export-button{display:inline-flex;gap:7px;align-items:center;justify-content:center;font:inherit;font-size:14px;padding:10px 14px;min-height:44px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);cursor:pointer}
 .export-button svg{width:18px;height:18px;flex-shrink:0}
@@ -1020,7 +1020,7 @@ function drawMonth(yr,m,K){
   ctx.strokeStyle=expToken('border');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(width-pad,y);ctx.stroke();y+=25;text('Feriados del mes',pad,y,25,'text',true);y+=42;
   if(!holidays.length)y=wrap(holidayYears.includes(yr)?'No hay feriados nacionales este mes.':'Feriados no verificados para '+yr+'.',pad,y,20,'muted',width-pad*2);
   holidays.forEach(function(h){text(h.date.slice(-2)+' '+MESES[m].slice(0,3),pad,y,21,'holiday',true);y=wrap(h.name,pad+110,y,21,'text',width-pad*2-110)+12});
-  y+=22;y=wrap(EXP_NOTE,pad,y,18,'muted',width-pad*2);y+=25;text('Aplicación desarrollada por Dixon Cortés',pad,y,20,'text',true);y+=55;
+  y+=22;y=wrap(EXP_NOTE,pad,y,18,'muted',width-pad*2);y+=25;text('Calendario de turnos · Tu turno, siempre a la mano',pad,y,18,'mark',false);y+=26;text('Aplicación desarrollada por Dixon Cortés',pad,y,18,'mark',false);y+=55;
   return {canvas:cropCanvas(canvas,width,y,K),w:width,h:y,title:title};
 }
 
@@ -1057,7 +1057,7 @@ function drawYear(yr,K){
     y+=rowH+rowGap;
   }
   if(!verified){y=wrap('Feriados no disponibles para '+yr+'.',pad,y,21,'muted',W-pad*2)+10}
-  y+=6;y=wrap(EXP_NOTE,pad,y,19,'muted',W-pad*2);y+=24;text('Aplicación desarrollada por Dixon Cortés',pad,y,21,'text',true);y+=56;
+  y+=6;y=wrap(EXP_NOTE,pad,y,19,'muted',W-pad*2);y+=24;text('Calendario de turnos · Tu turno, siempre a la mano',pad,y,19,'mark',false);y+=28;text('Aplicación desarrollada por Dixon Cortés',pad,y,19,'mark',false);y+=56;
   return {canvas:cropCanvas(canvas,W,y,K),w:W,h:y,title:String(yr)};
 }
 
