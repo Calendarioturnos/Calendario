@@ -34,7 +34,7 @@ automáticamente para cualquier año, según las leyes vigentes.
 ### 1.2
 
 - Menú nuevo arriba: Turno, Régimen, Vacaciones y Ayuda.
-- Pantalla inicial con el icono de la app y «Hecho por Dixon Cortés».
+- Pantalla inicial con el icono de la app y «Aplicación desarrollada por Dixon Cortés».
 - Aviso de actualización dentro de la app, con la lista de novedades.
 - Barra de estado naranja y aviso cuando no hay internet.
 - Al salir con el botón Atrás, la app se cierra del todo.
@@ -53,4 +53,4 @@ automáticamente para cualquier año, según las leyes vigentes.
 ¿Comentarios o sugerencias? Escríbeme desde la página «Acerca de» de la
 app o a <DixonCortes@outlook.cl>.
 
-Hecho por Dixon Cortés — © 2026.
+Aplicación desarrollada por Dixon Cortés — © 2026.
