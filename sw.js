@@ -6,8 +6,10 @@
  * Sube CACHE_NAME a 'turnos-v2', 'turnos-v3'... cada vez que cambie
  * index.html u otro archivo de la lista, para que los usuarios
  * instalados reciban la versión nueva.
+ * Las descargas usan {cache:'reload'} para no traer una copia vieja
+ * del caché HTTP del navegador.
  */
-var CACHE_NAME = 'turnos-v2';
+var CACHE_NAME = 'turnos-v3';
 var ASSETS = [
   './',
   'index.html',
@@ -22,7 +24,11 @@ var ASSETS = [
 self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(ASSETS);
+      return Promise.all(ASSETS.map(function (u) {
+        return fetch(u, { cache: 'reload' }).then(function (r) {
+          if (r && r.ok) return cache.put(u, r);
+        });
+      }));
     }).then(function () {
       return self.skipWaiting();
     })
@@ -47,7 +53,7 @@ self.addEventListener('fetch', function (event) {
   if (url.origin !== self.location.origin) return; // solo archivos propios
   event.respondWith(
     caches.match(event.request, { ignoreSearch: true }).then(function (cached) {
-      var network = fetch(event.request).then(function (response) {
+      var network = fetch(event.request, { cache: 'reload' }).then(function (response) {
         if (response && response.ok) {
           var copy = response.clone();
           caches.open(CACHE_NAME).then(function (cache) {
