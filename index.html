@@ -1011,7 +1011,7 @@ function drawMonth(yr,m,K){
   var cv=mkCanvas(width,H,K),canvas=cv[0],ctx=cv[1],T=mkTools(ctx),text=T.text,wrap=T.wrap;
   ctx.fillStyle=expToken('bg');ctx.fillRect(0,0,width,H);ctx.textBaseline='top';
   var title=expCap(MESES[m]+' '+yr),holidays=getChileHolidays(yr).filter(function(h){return +h.date.slice(5,7)===m+1});
-  text('WENU TURNOS',pad,48,23,'muted',true);text(title,pad,89,48,'text',true);
+  text('Wenu Turnos',pad,48,23,'muted',true);text(title,pad,89,48,'text',true);
   var top=wrap(expSummary(),pad,153,22,'muted',width-pad*2)+28;
   ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].forEach(function(d,i){text(d,pad+i*(cw+gap)+cw/2-20,top,20,'muted',true)});top+=38;
   cells.forEach(function(cell,i){if(cell.empty)return;var x=pad+(i%7)*(cw+gap),y0=top+Math.floor(i/7)*(ch+gap);ctx.fillStyle=expToken(cell.kind+'-bg');ctx.beginPath();ctx.roundRect(x,y0,cw,ch,8);ctx.fill();if(cell.holiday){ctx.strokeStyle=expToken('holiday');ctx.lineWidth=4;ctx.stroke();text('✦',x+cw-25,y0+7,19,'holiday',true)}text(String(cell.day),x+15,y0+15,32,cell.kind+'-text',true);text(cell.tag,x+15,y0+71,18,cell.kind+'-text',true)});
@@ -1028,7 +1028,7 @@ function drawYear(yr,K){
   var W=1500,pad=60,gx=40,cols=3,colW=(W-pad*2-gx*(cols-1))/cols,gap=5,cell=(colW-gap*6)/7,ch=cell*0.84,H=5400;
   var cv=mkCanvas(W,H,K),canvas=cv[0],ctx=cv[1],T=mkTools(ctx),text=T.text,wrap=T.wrap;
   ctx.fillStyle=expToken('bg');ctx.fillRect(0,0,W,H);ctx.textBaseline='top';
-  text('WENU TURNOS',pad,50,24,'muted',true);text(String(yr),pad,92,72,'text',true);
+  text('Wenu Turnos',pad,50,24,'muted',true);text(String(yr),pad,92,72,'text',true);
   var y=wrap(expSummary(),pad,186,24,'muted',W-pad*2)+16;
   [['W','Turno día'],['N','Turno noche'],['R','Descanso'],['V','Vacaciones']].forEach(function(it,i){var x=pad+i*276;ctx.fillStyle=expToken(it[0]+'-bg');ctx.fillRect(x,y,24,24);text(it[1],x+34,y+1,22,'text',false)});
   ctx.strokeStyle=expToken('holiday');ctx.lineWidth=3;ctx.strokeRect(pad+4*276+1.5,y+1.5,21,21);text('Feriado nacional',pad+4*276+34,y+1,22,'holiday',true);
