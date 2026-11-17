@@ -5,9 +5,9 @@
 <meta name="color-scheme" content="only light" id="cs">
 <script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("tema")||"light")}catch(e){document.documentElement.setAttribute("data-theme","light")}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Calendario de turnos y feriados de Chile | Dixon Cortés</title>
-<meta name="description" content="Calendario de turnos con feriados nacionales de Chile y el motivo de cada celebración.">
-<meta property="og:title" content="Calendario de turnos y feriados de Chile">
+<title>Wenu Turnos · Calendario de turnos y feriados de Chile | Dixon Cortés</title>
+<meta name="description" content="Wenu Turnos: calendario de turnos con feriados nacionales de Chile y el motivo de cada celebración.">
+<meta property="og:title" content="Wenu Turnos · Calendario de turnos y feriados de Chile">
 <meta property="og:description" content="Organiza tus turnos y consulta qué se celebra en cada feriado nacional de Chile.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -96,7 +96,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 .th{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));right:14px;width:38px;height:38px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;font-size:17px;cursor:pointer}
 .sub{padding-right:46px}
 .topbar{display:flex;align-items:center;gap:10px}
-.topbar h1{flex:1;margin:0}
+.topbar .brand{flex:1;min-width:0}.topbar h1{margin:0;line-height:1.15}.topbar .sub{margin:2px 0 0;font-size:13px;color:var(--mut)}.topbar .slogan{margin:0;font-size:12px;font-style:italic;color:var(--mut);text-align:right;line-height:1.35;flex:none}
 #homeBtn{border:0;background:none;padding:0;cursor:pointer;flex:none;line-height:0}
 #homeBtn img{width:38px;height:38px;border-radius:10px;display:block}
 .menu{display:flex;gap:6px;margin:12px 0}
@@ -168,9 +168,9 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 </style>
 </head>
 <body>
-<div id="sp"><img src="icon-512.png" alt="" width="150" height="150"><h2>Calendario de turnos</h2><p>Tu turno, siempre a la mano</p><div class="sb"><i></i></div><p class="sp-ver" id="sp-ver">Versión 1.3</p><small>Aplicación desarrollada por<br><b>Dixon Cortés</b><br>© 2026</small></div>
+<div id="sp"><img src="icon-512.png" alt="" width="150" height="150"><h2>Wenu Turnos</h2><p>Tu turno, siempre a la mano</p><div class="sb"><i></i></div><p class="sp-ver" id="sp-ver">Versión 1.3</p><small>Aplicación desarrollada por<br><b>Dixon Cortés</b><br>© 2026</small></div>
 <button id="th" class="th" aria-label="Cambiar tema claro u oscuro">🌙</button>
-<div class="topbar"><button id="homeBtn" aria-label="Volver a la pantalla inicial"><img src="icon-512.png" alt=""></button><h1>Calendario de turnos ⛏️</h1></div>
+<div class="topbar"><button id="homeBtn" aria-label="Volver a la pantalla inicial"><img src="icon-512.png" alt=""></button><div class="brand"><h1>Wenu Turnos ⛏️</h1><p class="sub">Calendario de Turnos</p></div><p class="slogan">Tu turno,<br>siempre a la mano</p></div>
 <p class="sub">Elige tu régimen, el tipo de turno y tu primer día de turno.</p>
 <div class="aviso" id="av" hidden></div>
 <div class="menu" id="menu">
@@ -1011,7 +1011,7 @@ function drawMonth(yr,m,K){
   var cv=mkCanvas(width,H,K),canvas=cv[0],ctx=cv[1],T=mkTools(ctx),text=T.text,wrap=T.wrap;
   ctx.fillStyle=expToken('bg');ctx.fillRect(0,0,width,H);ctx.textBaseline='top';
   var title=expCap(MESES[m]+' '+yr),holidays=getChileHolidays(yr).filter(function(h){return +h.date.slice(5,7)===m+1});
-  text('CALENDARIO DE TURNOS',pad,48,23,'muted',true);text(title,pad,89,48,'text',true);
+  text('WENU TURNOS',pad,48,23,'muted',true);text(title,pad,89,48,'text',true);
   var top=wrap(expSummary(),pad,153,22,'muted',width-pad*2)+28;
   ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].forEach(function(d,i){text(d,pad+i*(cw+gap)+cw/2-20,top,20,'muted',true)});top+=38;
   cells.forEach(function(cell,i){if(cell.empty)return;var x=pad+(i%7)*(cw+gap),y0=top+Math.floor(i/7)*(ch+gap);ctx.fillStyle=expToken(cell.kind+'-bg');ctx.beginPath();ctx.roundRect(x,y0,cw,ch,8);ctx.fill();if(cell.holiday){ctx.strokeStyle=expToken('holiday');ctx.lineWidth=4;ctx.stroke();text('✦',x+cw-25,y0+7,19,'holiday',true)}text(String(cell.day),x+15,y0+15,32,cell.kind+'-text',true);text(cell.tag,x+15,y0+71,18,cell.kind+'-text',true)});
@@ -1020,7 +1020,7 @@ function drawMonth(yr,m,K){
   ctx.strokeStyle=expToken('border');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(width-pad,y);ctx.stroke();y+=25;text('Feriados del mes',pad,y,25,'text',true);y+=42;
   if(!holidays.length)y=wrap(holidayYears.includes(yr)?'No hay feriados nacionales este mes.':'Feriados no verificados para '+yr+'.',pad,y,20,'muted',width-pad*2);
   holidays.forEach(function(h){text(h.date.slice(-2)+' '+MESES[m].slice(0,3),pad,y,21,'holiday',true);y=wrap(h.name,pad+110,y,21,'text',width-pad*2-110)+12});
-  y+=22;y=wrap(EXP_NOTE,pad,y,18,'muted',width-pad*2);y+=25;text('Calendario de turnos · Tu turno, siempre a la mano',pad,y,18,'mark',false);y+=26;text('Aplicación desarrollada por Dixon Cortés',pad,y,18,'mark',false);y+=55;
+  y+=22;y=wrap(EXP_NOTE,pad,y,18,'muted',width-pad*2);y+=25;text('Wenu Turnos · Tu turno, siempre a la mano',pad,y,18,'mark',false);y+=26;text('Aplicación desarrollada por Dixon Cortés',pad,y,18,'mark',false);y+=55;
   return {canvas:cropCanvas(canvas,width,y,K),w:width,h:y,title:title};
 }
 
@@ -1028,7 +1028,7 @@ function drawYear(yr,K){
   var W=1500,pad=60,gx=40,cols=3,colW=(W-pad*2-gx*(cols-1))/cols,gap=5,cell=(colW-gap*6)/7,ch=cell*0.84,H=5400;
   var cv=mkCanvas(W,H,K),canvas=cv[0],ctx=cv[1],T=mkTools(ctx),text=T.text,wrap=T.wrap;
   ctx.fillStyle=expToken('bg');ctx.fillRect(0,0,W,H);ctx.textBaseline='top';
-  text('CALENDARIO DE TURNOS',pad,50,24,'muted',true);text(String(yr),pad,92,72,'text',true);
+  text('WENU TURNOS',pad,50,24,'muted',true);text(String(yr),pad,92,72,'text',true);
   var y=wrap(expSummary(),pad,186,24,'muted',W-pad*2)+16;
   [['W','Turno día'],['N','Turno noche'],['R','Descanso'],['V','Vacaciones']].forEach(function(it,i){var x=pad+i*276;ctx.fillStyle=expToken(it[0]+'-bg');ctx.fillRect(x,y,24,24);text(it[1],x+34,y+1,22,'text',false)});
   ctx.strokeStyle=expToken('holiday');ctx.lineWidth=3;ctx.strokeRect(pad+4*276+1.5,y+1.5,21,21);text('Feriado nacional',pad+4*276+34,y+1,22,'holiday',true);
@@ -1057,7 +1057,7 @@ function drawYear(yr,K){
     y+=rowH+rowGap;
   }
   if(!verified){y=wrap('Feriados no disponibles para '+yr+'.',pad,y,21,'muted',W-pad*2)+10}
-  y+=6;y=wrap(EXP_NOTE,pad,y,19,'muted',W-pad*2);y+=24;text('Calendario de turnos · Tu turno, siempre a la mano',pad,y,19,'mark',false);y+=28;text('Aplicación desarrollada por Dixon Cortés',pad,y,19,'mark',false);y+=56;
+  y+=6;y=wrap(EXP_NOTE,pad,y,19,'muted',W-pad*2);y+=24;text('Wenu Turnos · Tu turno, siempre a la mano',pad,y,19,'mark',false);y+=28;text('Aplicación desarrollada por Dixon Cortés',pad,y,19,'mark',false);y+=56;
   return {canvas:cropCanvas(canvas,W,y,K),w:W,h:y,title:String(yr)};
 }
 
@@ -1074,15 +1074,15 @@ async function expBuild(){
   var s=expState,yr=st.y,mo=st.m,res={};
   if(s.scope==='mes'){
     var pg=drawMonth(yr,mo,2);
-    res.title='Calendario de turnos · '+pg.title;res.name='turnos-'+yr+'-'+String(mo+1).padStart(2,'0');res.preview=pg.canvas.toDataURL('image/png');
+    res.title='Wenu Turnos · '+pg.title;res.name='wenu-turnos-'+yr+'-'+String(mo+1).padStart(2,'0');res.preview=pg.canvas.toDataURL('image/png');
     if(s.format==='png')res.blob=await canvasBlob(pg.canvas);
     else{var pdf=newPdf(res.title);pdfAdd(pdf,pg,true);res.blob=pdf.output('blob')}
   }else{
-    res.title='Calendario de turnos · '+yr;
-    if(s.format==='png'){var py=drawYear(yr,2);res.name='turnos-'+yr;res.preview=py.canvas.toDataURL('image/png');res.blob=await canvasBlob(py.canvas)}
-    else if(s.layout==='hoja'){var ph=drawYear(yr,2),pdf2=newPdf(res.title);res.name='turnos-'+yr;res.preview=ph.canvas.toDataURL('image/png');pdfAdd(pdf2,ph,true);res.blob=pdf2.output('blob')}
+    res.title='Wenu Turnos · '+yr;
+    if(s.format==='png'){var py=drawYear(yr,2);res.name='wenu-turnos-'+yr;res.preview=py.canvas.toDataURL('image/png');res.blob=await canvasBlob(py.canvas)}
+    else if(s.layout==='hoja'){var ph=drawYear(yr,2),pdf2=newPdf(res.title);res.name='wenu-turnos-'+yr;res.preview=ph.canvas.toDataURL('image/png');pdfAdd(pdf2,ph,true);res.blob=pdf2.output('blob')}
     else{
-      var pdf3=newPdf(res.title);res.name='turnos-'+yr+'-12-paginas';
+      var pdf3=newPdf(res.title);res.name='wenu-turnos-'+yr+'-12-paginas';
       for(var m=0;m<12;m++){
         $('export-message').textContent='Preparando página '+(m+1)+' de 12…';await pause();
         var pm=drawMonth(yr,m,2);if(m===0)res.preview=pm.canvas.toDataURL('image/png');

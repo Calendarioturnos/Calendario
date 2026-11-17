@@ -1,6 +1,6 @@
-# Calendario de turnos y feriados de Chile
+# Wenu Turnos · Calendario de turnos y feriados de Chile
 
-Calendario de turnos rotativos para trabajadores: configura tu régimen
+Wenu Turnos es el calendario de turnos rotativos para trabajadores: configura tu régimen
 (días de trabajo y de descanso), tu tipo de turno y tu primer día de
 turno, y el calendario muestra tus días de trabajo, tus descansos y
 tus subidas y bajadas. Los feriados nacionales de Chile se calculan

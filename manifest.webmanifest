@@ -1,8 +1,8 @@
 {
   "id": "/turnos-mineros",
-  "name": "Calendario de turnos",
-  "short_name": "Turnos",
-  "description": "Calendario de turnos rotativos",
+  "name": "Wenu Turnos",
+  "short_name": "Wenu Turnos",
+  "description": "Calendario de turnos y feriados de Chile",
   "lang": "es",
   "start_url": "./",
   "scope": "./",
