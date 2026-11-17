@@ -93,10 +93,10 @@ details[open]>summary{margin-bottom:10px}
 footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;padding-top:12px;border-top:1px solid var(--bd)}
 .aviso{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;background:var(--w);color:var(--wt);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-weight:600;font-size:15px;line-height:1.4}
 .aviso[hidden]{display:none}
-.th{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));right:14px;width:38px;height:38px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;font-size:17px;cursor:pointer}
-.sub{padding-right:46px}
-.topbar{display:flex;align-items:center;gap:10px}
-.topbar .brand{flex:1;min-width:0}.topbar h1{margin:0;line-height:1.15}.topbar .sub{margin:2px 0 0;font-size:13px;color:var(--mut)}.topbar .slogan{margin:0;font-size:12px;font-style:italic;color:var(--mut);text-align:right;line-height:1.35;flex:none}
+.th{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:14px;width:38px;height:38px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font-size:17px;cursor:pointer}
+.topbar+.sub{padding-right:46px}
+.topbar{display:flex;align-items:flex-start;gap:10px}
+.topbar .brand{flex:1;min-width:0}.topbar h1{margin:0;line-height:1.15}.topbar .sub{margin:2px 0 0;font-size:13px;color:var(--mut)}.topbar .slogan{margin:2px 0 0;font-size:12px;font-style:italic;color:var(--mut)}
 #homeBtn{border:0;background:none;padding:0;cursor:pointer;flex:none;line-height:0}
 #homeBtn img{width:38px;height:38px;border-radius:10px;display:block}
 .menu{display:flex;gap:6px;margin:12px 0}
@@ -170,7 +170,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;margin:18px 0 8px;paddi
 <body>
 <div id="sp"><img src="icon-512.png" alt="" width="150" height="150"><h2>Wenu Turnos</h2><p>Tu turno, siempre a la mano</p><div class="sb"><i></i></div><p class="sp-ver" id="sp-ver">Versión 1.3</p><small>Aplicación desarrollada por<br><b>Dixon Cortés</b><br>© 2026</small></div>
 <button id="th" class="th" aria-label="Cambiar tema claro u oscuro">🌙</button>
-<div class="topbar"><button id="homeBtn" aria-label="Volver a la pantalla inicial"><img src="icon-512.png" alt=""></button><div class="brand"><h1>Wenu Turnos ⛏️</h1><p class="sub">Calendario de Turnos</p></div><p class="slogan">Tu turno,<br>siempre a la mano</p></div>
+<div class="topbar"><button id="homeBtn" aria-label="Volver a la pantalla inicial"><img src="icon-512.png" alt=""></button><div class="brand"><h1>Wenu Turnos ⛏️</h1><p class="sub">Calendario de Turnos</p><p class="slogan">Tu turno, siempre a la mano</p></div></div>
 <p class="sub">Elige tu régimen, el tipo de turno y tu primer día de turno.</p>
 <div class="aviso" id="av" hidden></div>
 <div class="menu" id="menu">
